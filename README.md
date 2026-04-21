@@ -50,7 +50,9 @@ This helps reduce centralized custody of sensitive family data and lowers ongoin
 
 ## Development note
 
-This is an independently maintained project. Parts of the code, structure, or wording may be drafted or refined with AI assistance.
+This repository is public so the code can be reviewed and inspected. The project is designed to reduce centralized storage of private family-tree data by relying mainly on the owner’s own Google Drive for private tree storage.
+
+To run the app locally, do not open the HTML files directly from disk. Serve the project from a local web server instead. You will also need to create your own Google Cloud project, generate your own OAuth credentials, add them to the code, and configure the allowed JavaScript origins in Google Cloud Console so they match your local server address.
 
 ## Status
 
