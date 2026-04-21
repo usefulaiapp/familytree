@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>關於與條款 — 家族記憶</title>
+  <meta name="description" content="了解家族記憶的使命、私隱政策、使用條款，以及我們如何保護您的資料。">
+  <!-- Replace the .invalid placeholder below with your real production domain before deployment. -->
+  <link rel="canonical" href="https://your-domain.com/trust.html">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://your-domain.com/trust.html">
+  <meta property="og:title" content="關於與條款 — 家族記憶">
+  <meta property="og:description" content="了解家族記憶的使命、私隱政策、使用條款，以及我們如何保護您的資料。">
+  <meta property="og:locale" content="zh_HK">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,700;1,700&family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="site.css">
+  <style>
+    .trust-hero { padding: 80px 0 48px; background: var(--p2); border-bottom: 1px solid var(--bd); }
+    .trust-grid { display: grid; grid-template-columns: 1fr; gap: 32px; margin-top: 48px; }
+    .trust-card { padding: 40px; }
+    .trust-card h2 { margin-bottom: 20px; color: var(--ink); border-left: 4px solid var(--gold); padding-left: 16px; }
+    .trust-card p { margin-bottom: 16px; color: var(--ink2); }
+    .trust-card ul { margin-left: 20px; margin-bottom: 16px; color: var(--ink2); }
+    .trust-card li { margin-bottom: 8px; }
+    .trust-card h3 { margin: 24px 0 12px; color: var(--ink); font-size: 16px; }
+
+    .toc { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+    .toc a { padding: 8px 16px; border-radius: 99px; background: rgba(255,255,255,0.7); border: 1px solid var(--bd); font-size: 14px; color: var(--ink2); text-decoration: none; transition: all 0.2s; }
+    .toc a:hover { background: #fff; color: var(--gold); border-color: var(--gold); }
+
+    .last-updated { font-size: 13px; color: var(--ink3); margin-top: 12px; }
+
+    .lang-toggle {
+      display: flex;
+      background: var(--p2);
+      border: 1px solid var(--bd);
+      border-radius: 99px;
+      padding: 2px;
+      margin-left: 20px;
+    }
+    .lang-btn {
+      padding: 4px 12px;
+      border-radius: 99px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+      background: transparent;
+      color: var(--ink3);
+    }
+    .lang-btn.active {
+      background: #fff;
+      color: var(--ink);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+  </style>
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="container nav-wrap">
+      <a href="index.html" class="logo" data-i18n="nav_brand">家族記憶</a>
+      <nav class="nav-links">
+        <a href="index.html" class="nav-link" data-i18n="nav_home">首頁</a>
+        <a href="app.html" class="btn btn-pri" data-i18n="nav_app">開啟應用</a>
+
+        <div class="lang-toggle">
+          <button class="lang-btn" id="lang-zh-btn" onclick="setLang('zh')">ZH</button>
+          <button class="lang-btn" id="lang-en-btn" onclick="setLang('en')">EN</button>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="trust-hero">
+      <div class="container">
+        <h1 class="section-title" data-i18n="hero_title">關於本計劃</h1>
+        <p class="section-subtitle" data-i18n="hero_subtitle">了解「家族記憶」的使命、我們如何保護您的資料、以及使用本平台的相關條款。</p>
+        <div class="toc">
+          <a href="#about" data-i18n="toc_about">關於</a>
+          <a href="#how" data-i18n="toc_how">運作方式</a>
+          <a href="#privacy" data-i18n="toc_privacy">私隱政策</a>
+          <a href="#terms" data-i18n="toc_terms">使用條款</a>
+          <a href="#disclaimer" data-i18n="toc_disclaimer">免責聲明</a>
+          <a href="#contact" data-i18n="toc_contact">聯繫我們</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="trust-content">
+      <div class="container">
+        <div class="trust-grid">
+
+          <!-- ① About -->
+          <div class="card trust-card" id="about">
+            <h2 data-i18n="about_title">關於「家族記憶」</h2>
+            <p data-i18n="about_p1">本計劃是一個由個人獨立維護的興趣項目。網站的部分程式碼、結構及文字內容，是在 AI 工具（包括 Antigravity、Claude 及 Codex 等）的協助下完成，並由項目擁有者作最終審閱、修改及發布。</p>
+            <p data-i18n="about_p2">本項目採用以私隱為先的設計方向，並不設用作儲存私人家族樹的中央後端；私人家族樹原則上由擁有者自行存放於其 Google Drive。與其他仍在持續改進的軟件一樣，系統仍可能出現錯誤或未預期情況，包括 AI 輔助開發相關部分。本工具按「現狀」及盡力而為原則提供，使用者亦應自行備份重要資料。</p>
+          </div>
+
+          <!-- ② How it works -->
+          <div class="card trust-card" id="how">
+            <h2 data-i18n="how_title">運作方式</h2>
+            <p data-i18n="how_p1">本平台目前主要以網頁應用方式提供。核心家族樹資料的建立、編輯與顯示主要在瀏覽器內進行；已登入的擁有者可將私人家族樹儲存於自己的 Google Drive。部分功能目前仍屬原型或過渡狀態。</p>
+            <ul>
+              <li data-i18n="how_li1"><strong>登入：</strong>透過 Google 帳號登入，用於識別身份與存取 Google Drive。</li>
+              <li data-i18n="how_li2"><strong>儲存：</strong>已登入擁有者的私人家族樹可儲存於其個人的 Google Drive；部分偏好設定、快取資料或仍在過渡中的功能，可能暫時保留於瀏覽器本地儲存。</li>
+              <li data-i18n="how_li3"><strong>內部共享：</strong>本平台是專為促進家庭凝聚而設計的私人工具，並不以對外分享為目的。樹的擁有者可透過 Google Drive 內部權限，安全地邀請家族成員查看或協作交流。</li>
+
+            </ul>
+          </div>
+
+          <!-- ③ Privacy Policy -->
+          <div class="card trust-card" id="privacy">
+            <h2 data-i18n="priv_title">私隱政策</h2>
+            <p class="last-updated" data-i18n="priv_updated">最後更新：2026 年 4 月</p>
+
+            <h3 data-i18n="priv_store_h">資料如何儲存</h3>
+            <p data-i18n="priv_collect_p">本網站的公開頁面，例如首頁及條款／說明頁面，可在未登入情況下瀏覽。不過，私人家族樹的核心功能——包括登入、建立、重新開啟、儲存私人家族樹，或開啟他人共享的家族樹——一般需要使用 Google 帳號，以便本應用識別使用者身分、判斷存取權限，以及開啟或儲存與本應用相關的 Google Drive 檔案。當您使用 Google 登入時，您的瀏覽器可能會在記憶體或本地瀏覽器儲存中，暫時保留有限的帳號資料，例如 Google 帳號名稱、電郵地址及頭像，用於介面顯示、登入狀態還原及權限判斷。當您建立、編輯或匯入家族樹時，本應用亦可能透過您的瀏覽器處理您輸入的資料，例如姓名、關係、日期、故事，以及您自行加入的聯絡資料或備註。相關登入及 Google Drive 動作，會經由您所使用的 Google 服務處理。</p>
+            <h3 data-i18n="priv_auth_h">登入與 Drive 功能</h3>
+            <p data-i18n="priv_auth_p">私人家族樹的建立、重新開啟、儲存，以及受邀成員開啟共享樹檔案，通常需要使用 Google 登入及相關 Drive 權限。本平台目前以擁有者與受邀家族成員存取為主，並不以公開家族樹瀏覽作為主要使用方式。</p>
+            <ul>
+              <li data-i18n="priv_store_li1"><strong>Google Drive：</strong>已登入擁有者的主要家族樹 JSON 檔案可儲存於其個人的 Google Drive 空間。</li>
+              <li data-i18n="priv_store_li2"><strong>瀏覽器本地儲存：</strong>部分設定、快取資料與仍在過渡中的功能可能使用 Local Storage，因此資料可能保留在您的裝置上。</li>
+              <li data-i18n="priv_store_li3"><strong>平台架構：</strong>本計劃的設計目標，是盡量減少由平台集中保存家族樹內容。我們目前不提供自有應用後端來存放樹檔案，但您的瀏覽器與 Google 服務仍是整體資料流程的一部分。</li>
+            </ul>
+
+            <h3 data-i18n="priv_analytics_h">流量統計</h3>
+            <p data-i18n="priv_analytics_p">本網站可能使用基本的流量統計工具來了解整體平台使用情況（例如頁面瀏覽量或特定功能的使用次數）。這類工具旨在收集匿名的彙總數據，並盡量避免收集敏感的個人識別資料。最重要的是，這些統計數據僅用於改善應用體驗，平台本身絕對不會截取、讀取或追蹤您建立的家族樹內部詳細資料。此外，公開頁面仍可能被搜尋引擎或 AI 索引服務存取；而私人應用程式頁面（app.html）目前設有 <code>noindex</code> 標記。</p>
+
+            <h3 data-i18n="priv_third_h">第三方服務</h3>
+            <p data-i18n="priv_third_p">本平台使用以下 Google 服務：Google Identity Services（登入）、Google Drive API（檔案儲存與共享）、Google Picker API（檔案選取）。當您使用這些功能時，您的資料受 <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google 私隱政策</a> 約束。資料可能經由 Google 的全球基礎設施在不同地區傳輸與儲存。</p>
+            <h3 data-i18n="priv_scope_h">Google 權限範圍</h3>
+            <p data-i18n="priv_scope_p">當您使用 Drive 儲存功能時，本平台目前會請求 <code>drive.file</code> 權限，用於建立、開啟與更新此應用所使用的 Drive 檔案。此權限的設計目的，是限制存取範圍於與本應用相關的檔案，而非您的整個 Google Drive。</p>
+
+            <h3 data-i18n="priv_visibility_h">匯出與傳送的可見性</h3>
+            <p data-i18n="priv_visibility_p">如您將家族樹匯出為圖片或 PDF，或將相關內容傳送給他人，這些資料可能在平台控制範圍之外被保存、截圖或轉發。傳送前請自行確認內容是否適合向特定對象披露，並特別留意仍在世親屬的個人資料與故事。</p>
+
+            <h3 data-i18n="priv_share_h">家族存取與邀請</h3>
+            <ul>
+              <li data-i18n="priv_share_li1"><strong>受邀家族成員：</strong>擁有者可透過 Google Drive 共享設定，邀請家族成員查看或協作家族樹。此為本平台的主要共享方式。</li>
+              <li data-i18n="priv_share_li2"><strong>匯出與外部傳遞：</strong>如將匯出圖片或檔案對外傳送，請自行確認內容是否適合，並盡量避免公開披露仍在世親屬的個人資料。</li>
+              <li data-i18n="priv_share_li3"><strong>資料處理原則：</strong>本平台的設計目標是盡量減少集中持有私密家族樹內容。正常使用過程中，瀏覽器本地儲存與 Google 服務仍可能處理部分帳號、檔案或共享相關資料。</li>
+            </ul>
+
+            <h3 data-i18n="priv_rights_h">您的權利</h3>
+            <p data-i18n="priv_rights_p">您可以隨時透過 Google Drive 刪除您的家族樹檔案，透過 Google 帳號設定撤銷本應用的存取權限，並在需要時清除瀏覽器本地儲存資料。如需協助刪除資料、停用分享或有任何私隱疑慮，請透過下方聯繫方式與我們聯繫。</p>
+          </div>
+
+          <!-- ④ Terms of Use -->
+          <div class="card trust-card" id="terms">
+            <h2 data-i18n="terms_title">使用條款</h2>
+            <p class="last-updated" data-i18n="terms_updated">最後更新：2026 年 4 月</p>
+
+            <h3 data-i18n="terms_accept_h">接受條款</h3>
+            <p data-i18n="terms_accept_p">當您登入、建立、上傳、儲存、共享、匯出或持續使用本平台時，即表示您同意受本頁條款與相關私隱說明約束。若您不同意，請停止使用相關功能。</p>
+
+            <h3 data-i18n="terms_asis_h">服務性質</h3>
+            <p data-i18n="terms_asis_p">本平台按「現狀」(as is) 及「現有」(as available) 基礎提供，僅供家族紀念與研究參考，不具備任何法律效力。計劃維護方不作任何明示或暗示的保證，包括但不限於對適用性、可靠性、準確性或不侵權的保證。</p>
+
+            <h3 data-i18n="terms_age_h">資格與年齡</h3>
+            <p data-i18n="terms_age_p">您應具備適用法律下使用本平台、Google 帳號及相關檔案的資格與權限。本平台不擬向 13 歲以下兒童提供服務；如您未滿 18 歲，請在家長、監護人或其他適當成年人指導下使用。</p>
+
+            <h3 data-i18n="terms_account_h">帳號與存取責任</h3>
+            <p data-i18n="terms_account_p">您需自行保管所使用的 Google 帳號、裝置與登入狀態，並對該帳號下進行的儲存、共享、匯出與權限操作負責。若您懷疑有未經授權的存取，請盡快檢查 Google 帳號與 Drive 權限設定。</p>
+
+            <h3 data-i18n="terms_user_h">用戶責任</h3>
+            <ul>
+              <li data-i18n="terms_user_li1">您需對所上傳內容的準確性、合法性、版權，以及使用相關資料的權利或授權負全責。</li>
+              <li data-i18n="terms_user_li2">在上傳他人的個人資料（姓名、故事等）前，您必須取得當事人（或其法定代理人）的同意。</li>
+              <li data-i18n="terms_user_li3">您不得利用本平台從事任何違法、騷擾或侵害他人權益的行為。</li>
+            </ul>
+
+            <h3 data-i18n="terms_content_h">內容擁有權與平台使用權</h3>
+            <p data-i18n="terms_content_p">您或相關權利人仍保有您上傳內容的權利；但為了提供登入、顯示、儲存、同步、共享與匯出等功能，您同意本平台在必要範圍內處理該等內容。若您沒有足夠權限，請勿上傳或共享相關資料。</p>
+
+            <h3 data-i18n="terms_share_h">共享、協作與匯出風險</h3>
+            <p data-i18n="terms_share_p">當您決定邀請其他人查看或協作，或是使用匯出圖片 / PDF 功能後，相關資料可能被第三方複製、下載、截圖、轉發或另行保存。平台不對第三方行為負責，您應自行判斷資料共享之風險與適當性。</p>
+
+            <h3 data-i18n="terms_avail_h">服務可用性</h3>
+            <p data-i18n="terms_avail_p">本平台由獨立維護者持續改進，但我們無法保證服務持續可用、完全不中斷，或資料可永久保存。服務可能隨時變更、中斷或終止。您應自行保留重要備份，例如在 Google Drive 中保留原始資料，並按需要匯出圖片、PDF 或其他副本。</p>
+
+            <h3 data-i18n="terms_thirdp_h">第三方依賴</h3>
+            <p data-i18n="terms_thirdp_p">本平台依賴 Google 提供的服務。我們無法控制 Google 服務的可用性、條款變更或定價調整。使用本平台即表示您同時受 <a href="https://policies.google.com/terms" target="_blank" rel="noopener">Google 服務條款</a> 約束。</p>
+
+            <h3 data-i18n="terms_liability_h">責任限制</h3>
+            <p data-i18n="terms_liability_p">在適用法律允許的範圍內，如您因使用或無法使用本平台而蒙受損失或損害，計劃維護方一般不承擔法律責任，包括但不限於資料遺失、服務中斷、內容錯誤或其他相關損失。本條款不影響任何依法不能被排除或限制的責任。</p>
+
+            <h3 data-i18n="terms_change_h">條款變更</h3>
+            <p data-i18n="terms_change_p">如有需要，我們可基於維護、穩定性、安全、法律風險或其他合理原因，修改、限制、暫停部分功能或更新本頁內容。修改後繼續使用本平台，即表示您接受更新後的安排；如您不同意，請停止使用相關功能。</p>
+          </div>
+
+          <!-- ⑤ Disclaimer -->
+          <div class="card trust-card" id="disclaimer">
+            <h2 data-i18n="disc_title">免責聲明</h2>
+            <p class="last-updated" data-i18n="disc_updated">最後更新：2026 年 4 月</p>
+            <h3 data-i18n="disc_nodata_h">資料不保證與無責任承擔</h3>
+            <p data-i18n="disc_nodata_p">本平台不備份或保證保留您的任何家族資料。您的資料存放於您連接的 Google Drive 中，並由您全權負責管理。如因任何程式錯誤、API 變更或使用者操作導致資料遺失或損毀，開發者與平台概不負責。請自行定期備份您的重要資料。</p>
+
+            <h3 data-i18n="disc_nolegal_h">家族紛爭與資料私隱免責</h3>
+            <p data-i18n="disc_nolegal_p">本平台僅作為資料紀錄的輔助工具工具。使用者為自己家族資料的「資料管制者」(Data Controller) 且須自行遵守當地個人資料保護法。因輸入家庭成員資料或分享檔案所引起的任何家庭糾紛、私隱侵犯指控或衍生訴訟，均由使用者承擔全部法律責任，概與本平台無涉。</p>
+            
+            <h3 data-i18n="disc_asis_h">「現狀」提供與全面免責</h3>
+            <p data-i18n="disc_asis_p">在法律允許的最大範圍內，本平台所有服務及程式碼皆按「現狀」(As Is) 提供，不附帶任何形式的明示或暗示擔保。開發者明確拒絕承擔任何直接、間接、附帶、特殊、懲罰性或衍生性損害之賠償責任。</p>
+          </div>
+
+          <!-- ⑥ Contact -->
+          <div class="card trust-card" id="contact">
+            <h2 data-i18n="cont_title">聯繫我們</h2>
+            <p data-i18n="cont_p1">如果您遇到技術問題、有產品回饋，或對私隱政策有任何疑問，歡迎隨時與我們聯繫。請注意：由於本平台沒有中央資料庫，我們無法存取、編輯或刪除其他使用者在 Google Drive 的個人檔案。</p>
+            <p><span data-i18n="cont_email">電郵：</span><a href="mailto:usefulaiapp@gmail.com" style="color:var(--gold); font-weight:600;">usefulaiapp@gmail.com</a></p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <span class="logo" data-i18n="footer_brand">家族記憶</span>
+          <p class="footer-desc" data-i18n="footer_desc">致力於用現代技術保存傳統親情與家族歷史。</p>
+        </div>
+        <div class="footer-col">
+          <h4 data-i18n="footer_links_h">連結</h4>
+          <ul class="footer-links">
+            <li><a href="index.html" data-i18n="footer_home">首頁</a></li>
+            <li><a href="app.html" data-i18n="footer_app">開啟應用</a></li>
+            <li><a href="trust.html#about" data-i18n="footer_about">關於我們</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4 data-i18n="footer_legal_h">法務與政策</h4>
+          <ul class="footer-links">
+            <li><a href="trust.html#terms" data-i18n="footer_terms">使用條款</a></li>
+            <li><a href="trust.html#privacy" data-i18n="footer_privacy">私隱政策</a></li>
+            <li><a href="trust.html#disclaimer" data-i18n="footer_disclaimer">免責聲明</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4 data-i18n="footer_contact_h">聯絡</h4>
+          <ul class="footer-links">
+            <li><a href="trust.html#contact" data-i18n="footer_support">聯絡我們</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom" style="margin-top:40px; padding-top:20px; border-top:1px solid var(--bd); display:flex; justify-content:space-between; align-items:center;">
+        <p data-i18n="footer_copy" style="margin:0;">© 2026 Family Heritage Project. 讓愛傳承。</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const LANG_KEY = 'family-heritage-lang';
+
+    const I18N = {
+      zh: {
+        site_title: "關於與條款",
+        nav_brand: "家族記憶",
+        nav_home: "首頁",
+        nav_app: "開啟應用",
+        hero_title: "關於本計劃",
+        hero_subtitle: "了解「家族記憶」的使命、我們如何保護您的資料、以及使用本平台的相關條款。",
+        toc_about: "關於",
+        toc_how: "運作方式",
+        toc_privacy: "私隱政策",
+        toc_terms: "使用條款",
+        toc_disclaimer: "免責聲明",
+        toc_contact: "聯繫我們",
+
+        about_title: "關於「家族記憶」",
+        about_p1: "本計劃是一個由個人獨立維護的興趣項目。網站的部分程式碼、結構及文字內容，是在 AI 工具（包括 Antigravity、Claude 及 Codex 等）的協助下完成，並由項目擁有者作最終審閱、修改及發布。",
+        about_p2: "本項目採用以私隱為先的設計方向，並不設用作儲存私人家族樹的中央後端；私人家族樹原則上由擁有者自行存放於其 Google Drive。與其他仍在持續改進的軟件一樣，系統仍可能出現錯誤或未預期情況，包括 AI 輔助開發相關部分。本工具按「現狀」及盡力而為原則提供，使用者亦應自行備份重要資料。",
+
+        how_title: "運作方式",
+        how_p1: "本平台目前主要以網頁應用方式提供。核心家族樹資料的建立、編輯與顯示主要在瀏覽器內進行；已登入的擁有者可將私人家族樹儲存於自己的 Google Drive。部分功能目前仍屬原型或過渡狀態。",
+        how_li1: "<strong>登入：</strong>透過 Google 帳號登入，用於識別身份與存取 Google Drive。",
+        how_li2: "<strong>儲存：</strong>已登入擁有者的私人家族樹可儲存於其個人的 Google Drive；部分偏好設定、快取資料或仍在過渡中的功能，可能暫時保留於瀏覽器本地儲存。",
+        how_li3: "<strong>內部共享：</strong>本平台是專為促進家庭凝聚而設計的私人工具，並不以對外分享為目的。樹的擁有者可透過 Google Drive 內部權限，安全地邀請家族成員查看或協作交流。",
+
+
+        priv_title: "私隱政策 (Privacy Policy)",
+        priv_updated: "最後更新：2026 年 4 月",
+        priv_collect_p: "本網站的公開頁面，例如首頁及條款／說明頁面，可在未登入情況下瀏覽。不過，私人家族樹的核心功能——包括登入、建立、重新開啟、儲存私人家族樹，或開啟他人共享的家族樹——一般需要使用 Google 帳號，以便本應用識別使用者身分、判斷存取權限，以及開啟或儲存與本應用相關的 Google Drive 檔案。當您使用 Google 登入時，您的瀏覽器可能會在記憶體或本地瀏覽器儲存中，暫時保留有限的帳號資料，例如 Google 帳號名稱、電郵地址及頭像，用於介面顯示、登入狀態還原及權限判斷。當您建立、編輯或匯入家族樹時，本應用亦可能透過您的瀏覽器處理您輸入的資料，例如姓名、關係、日期、故事，以及您自行加入的聯絡資料或備註。相關登入及 Google Drive 動作，會經由您所使用的 Google 服務處理。",
+        priv_store_h: "資料如何儲存",
+        priv_auth_h: "登入與 Drive 功能",
+        priv_auth_p: "私人家族樹的建立、重新開啟、儲存，以及受邀成員開啟共享樹檔案，通常需要使用 Google 登入及相關 Drive 權限。本平台目前以擁有者與受邀家族成員存取為主，並不以公開家族樹瀏覽作為主要使用方式。",
+        priv_store_li1: "<strong>Google Drive：</strong>已登入擁有者的主要家族樹 JSON 檔案可儲存於其個人的 Google Drive 空間。",
+        priv_store_li2: "<strong>瀏覽器本地儲存：</strong>部分設定、快取資料與仍在過渡中的功能可能使用 Local Storage，因此資料可能保留在您的裝置上。",
+        priv_store_li3: "<strong>平台架構：</strong>本計劃的設計目標，是盡量減少由平台集中保存家族樹內容。我們目前不提供自有應用後端來存放樹檔案，但您的瀏覽器與 Google 服務仍是整體資料流程的一部分。",
+        priv_analytics_h: "流量統計",
+        priv_analytics_p: "本網站可能使用基本的流量統計工具來了解整體平台使用情況（例如頁面瀏覽量或特定功能的使用次數）。這類工具旨在收集匿名的彙總數據，並盡量避免收集敏感的個人識別資料。最重要的是，這些統計數據僅用於改善應用體驗，平台本身絕對不會截取、讀取或追蹤您建立的家族樹內部詳細資料。此外，公開頁面仍可能被搜尋引擎或 AI 索引服務存取；而私人應用程式頁面（app.html）目前設有 <code>noindex</code> 標記。",
+        priv_third_h: "第三方服務",
+        priv_third_p: "本平台使用以下 Google 服務：Google Identity Services（登入）、Google Drive API（檔案儲存與共享）、Google Picker API（檔案選取）。當您使用這些功能時，您的資料受 <a href=\"https://policies.google.com/privacy\" target=\"_blank\" rel=\"noopener\">Google 私隱政策</a> 約束。資料可能經由 Google 的全球基礎設施在不同地區傳輸與儲存。",
+        priv_scope_h: "Google 權限範圍",
+        priv_scope_p: "當您使用 Drive 儲存功能時，本平台目前會請求 <code>drive.file</code> 權限，用於建立、開啟與更新此應用所使用的 Drive 檔案。此權限的設計目的，是限制存取範圍於與本應用相關的檔案，而非您的整個 Google Drive。",
+        priv_visibility_h: "匯出與傳送的可見性",
+        priv_visibility_p: "如您將家族樹匯出為圖片或 PDF，或將相關內容傳送給他人，這些資料可能在平台控制範圍之外被保存、截圖或轉發。傳送前請自行確認內容是否適合向特定對象披露，並特別留意仍在世親屬的個人資料與故事。",
+        priv_share_h: "家族存取與邀請",
+        priv_share_li1: "<strong>受邀家族成員：</strong>擁有者可透過 Google Drive 共享設定，邀請家族成員查看或協作家族樹。此為本平台的主要共享方式。",
+        priv_share_li2: "<strong>匯出與外部傳遞：</strong>如將匯出圖片或檔案對外傳送，請自行確認內容是否適合，並盡量避免公開披露仍在世親屬的個人資料。",
+        priv_share_li3: "<strong>資料處理原則：</strong>本平台的設計目標是盡量減少集中持有私密家族樹內容。正常使用過程中，瀏覽器本地儲存與 Google 服務仍可能處理部分帳號、檔案或共享相關資料。",
+        priv_rights_h: "您的權利",
+        priv_rights_p: "您可以隨時透過 Google Drive 刪除您的家族樹檔案，透過 Google 帳號設定撤銷本應用的存取權限，並在需要時清除瀏覽器本地儲存資料。如需協助刪除資料、停用分享或有任何私隱疑慮，請透過下方聯繫方式與我們聯繫。",
+
+        terms_title: "使用條款 (Terms of Use)",
+        terms_updated: "最後更新：2026 年 4 月",
+        terms_accept_h: "接受條款",
+        terms_accept_p: "當您登入、建立、上傳、儲存、共享、匯出或持續使用本平台時，即表示您同意受本頁條款與相關私隱說明約束。若您不同意，請停止使用相關功能。",
+        terms_asis_h: "服務性質與無法提供擔保",
+        terms_asis_p: "本平台按「現狀」(as is) 及「現有」(as available) 基礎提供，僅供增進家族聯繫之技術工具使用，不具備任何法律效力。平台開發者及維護方明確拒絕對本程式作出任何明示、暗示或法定的保證，包括但不限於無錯誤、資料不遺失或網路持續連線之保證。",
+        terms_account_h: "帳號與存取責任",
+        terms_account_p: "您需自行保管所使用的 Google 帳號、裝置與登入狀態，並對該帳號下進行的儲存、共享、匯出與權限操作負責。若您懷疑有未經授權的存取，請盡快檢查 Google 帳號與 Drive 權限設定。",
+        terms_user_h: "使用者上傳與資料合法性責任",
+        terms_user_li1: "您須對所上傳內容的準確性、合法性、版權，以及收集和使用相關資料的權限負起百分之百的最終責任。",
+        terms_user_li2: "在上傳他人的個人資料（姓名、故事、聯絡方式等）前，您有義務取得當事人（或其當事人法定代理人）的充分知情同意。",
+        terms_user_li3: "您絕對不得利用本平台從事任何違反當地法律、侵害私隱權、誹謗或侵犯他人權益的行為。",
+        terms_content_h: "內容擁有權與系統授權",
+        terms_content_p: "您或相關權利人仍保有您上傳內容的權利；但為了使程式能正常運作（提供登入、顯示、儲存、同步及匯出等功能），您必須同意並授權本平台在技術必要範圍內處理該等內容。",
+        terms_share_h: "共享、協作與匯出衍生風險",
+        terms_share_p: "當您決定邀請其他人查看或協作，或是使用匯出圖片 / PDF 功能後，相關資料可能被第三方複製、下載、截圖、轉發或另行保存。平台不對第三方行為負責，您應自行判斷資料共享之風險與適當性。",
+        terms_avail_h: "服務變更與備份責任",
+        terms_avail_p: "本平台由獨立維護者開發。我們無法保證服務永遠持續可用或資料永久保存。系統及程式可能會隨時因技術原因而變更或中斷。您應自行並定期在 Google Drive 或個人裝置中保留重要的全量資料備份與副本，切勿將本平台視為唯一儲存來源。",
+        terms_thirdp_h: "無控制權之第三方依賴",
+        terms_thirdp_p: "本程式極度依賴 Google 提供的 API 服務。我們絕對無法控制 Google 服務的可用性、政策轉換或無預警關閉。使用本平台即代表您同意同時受 <a href=\"https://policies.google.com/terms\" target=\"_blank\" rel=\"noopener\">Google 服務條款</a> 約束。",
+        terms_liability_h: "從寬責任限制條款",
+        terms_liability_p: "在適用法律允許的最大範圍內，平台開發者、維護者、設計者對您因使用或無法使用本平台所致之任何直接、間接、附帶、衍生性、懲罰性或特殊損害（包括但不限於重要家族資料永久遺失、精神損害、家庭糾紛或私隱外洩指控），一概不承擔任何賠償責任。",
+        terms_age_h: "資格與年齡限制",
+        terms_age_p: "您應具備當地適用法律下法定成年人的締約能力。本平台絕不向 13 歲以下兒童提供服務；如您未滿 18 歲，必須在家長或監護人之持續指導下使用。",
+        terms_change_h: "條款與功能之單方面更新權",
+        terms_change_p: "我們有權隨時基於法律防禦、安全、營運或其他理由，直接修改、限制或關閉部分功能且更新本頁條款，恕不另行個別通知。修改後繼續使用本平台，即視為您已理解並接受更新後之規範。",
+
+        disc_title: "免責聲明 (Disclaimer)",
+        disc_updated: "最後更新：2026 年 4 月",
+        disc_nodata_h: "資料不保證與無責任承擔",
+        disc_nodata_p: "本平台不備份或保證保留您的任何家族資料。您的資料存放於您連接的 Google Drive 中，並由您全權負責管理。如因任何程式錯誤、API 變更或使用者操作導致資料遺失或損毀，開發者與平台概不負責。請自行定期備份您的重要資料。",
+        disc_nolegal_h: "家族紛爭與資料私隱免責",
+        disc_nolegal_p: "本平台僅為技術呈現工具。使用者擔任自己家族資料的「資料管制者」(Data Controller) 且須自行遵守適用地之個人資料法規。因輸入家庭成員資料或分享檔案所引起之任何家庭糾紛、私隱侵犯指控或衍生訴訟，均由使用者擔負全責，概與本平台無涉。",
+        disc_asis_h: "「現狀」提供與全面免責",
+        disc_asis_p: "在法律允許的最大範圍內，本平台所有服務及程式碼皆按「現狀」(As Is) 及「現有」 基礎提供，不附帶任何明示或暗示之擔保，亦不保證可用性或安全性。開發者明確拒絕承擔任何性質之損害賠償。",
+
+        cont_title: "聯繫我們",
+        cont_p1: "如果您遇到技術問題、有產品回饋，或對私隱政策有任何疑問，歡迎隨時與我們聯繫。請注意：由於本平台沒有中央資料庫，我們無法存取、編輯或為您刪除其他使用者在 Google Drive 的個人檔案。",
+        cont_email: "電郵：",
+        
+        footer_brand: "家族記憶",
+        footer_desc: "致力於用現代技術保存傳統親情與家族歷史。",
+        footer_links_h: "連結",
+        footer_legal_h: "法務與政策",
+        footer_contact_h: "聯絡",
+        footer_home: "首頁",
+        footer_about: "關於我們",
+        footer_privacy: "私隱政策",
+        footer_terms: "使用條款",
+        footer_disclaimer: "免責聲明",
+        footer_support: "聯絡我們",
+        footer_app: "開啟應用",
+        footer_copy: "© 2026 Family Heritage Project. 讓愛傳承。"
+      },
+      en: {
+        site_title: "About and Terms",
+        nav_brand: "Family Heritage",
+        nav_home: "Home",
+        nav_app: "Open App",
+        hero_title: "About This Project",
+        hero_subtitle: "Learn about Family Heritage's mission, how we protect your data, and the terms for using this platform.",
+        toc_about: "About",
+        toc_how: "How It Works",
+        toc_privacy: "Privacy Policy",
+        toc_terms: "Terms of Use",
+        toc_disclaimer: "Disclaimer",
+        toc_contact: "Contact",
+
+        about_title: "About Family Heritage",
+        about_p1: "This is an independently maintained hobby project. Parts of the website’s code, structure, and wording were developed with the assistance of AI tools, including Antigravity, Claude, and Codex. The project is designed with a privacy-first approach and does not use a central backend for private family-tree storage; instead, the owner’s private tree is intended to be stored in the owner’s own Google Drive.",
+        about_p2: "As with any evolving software project, bugs or unexpected issues may still occur, including in areas influenced by AI-assisted development. This tool is provided on an “as is” and best-effort basis, and users should keep their own backups of important data.",
+
+        how_title: "How It Works",
+        how_p1: "This platform is currently delivered primarily as a web application. Core family-tree creation, editing, and display happen mainly in the browser, and signed-in owners can store their private tree in their own Google Drive. Some features are still in a prototype or transitional state.",
+        how_li1: "<strong>Sign In:</strong> Sign in with your Google account for identity verification and Google Drive access.",
+        how_li2: "<strong>Storage:</strong> A signed-in owner's private family tree can be stored in that owner's personal Google Drive. Some preferences, cached metadata, or transitional features may still rely on browser local storage.",
+        how_li3: "<strong>Internal Sharing:</strong> This platform is designed primarily as a private tool for family bonding, not for external sharing. The owner can securely invite family members to view or collaborate relying solely on internal Google Drive permissions.",
+
+
+        priv_title: "Privacy Policy",
+        priv_updated: "Last updated: April 2026",
+        priv_collect_p: "Public website pages, such as the homepage and the terms / information page, may be viewed without signing in. However, the core private family-tree functions — including signing in, creating, reopening, saving a private tree, or opening a tree shared by someone else — generally require a Google account so the app can identify the user, check access permissions, and open or save the Google Drive files used with this app. When you sign in with Google, your browser may temporarily keep limited account information, such as your Google account name, email address, and profile photo, in memory or local browser storage for interface display, session restoration, and permission checks. When you create, edit, or import a family tree, this app may handle information you enter through your browser, such as names, relationships, dates, stories, and any contact details or notes you choose to add. Related sign-in and Google Drive actions are handled through the Google services you choose to use.",
+        priv_store_h: "How Data Is Stored",
+        priv_auth_h: "Sign-In and Drive Features",
+        priv_auth_p: "Creating, reopening, and saving a private family tree, as well as opening a shared tree file as an invited family member, will generally require Google sign-in and the relevant Drive permissions. This platform is mainly intended for access by the owner and invited family members, rather than public browsing of family trees.",
+        priv_store_li1: "<strong>Google Drive:</strong> The main family tree JSON file for a signed-in owner can be stored in that owner's personal Google Drive.",
+        priv_store_li2: "<strong>Browser Local Storage:</strong> Some settings, cached metadata, and transitional feature data may still use Local Storage, which means certain data may remain on your device.",
+        priv_store_li3: "<strong>Platform Architecture:</strong> The product is designed to reduce centralized storage of private family-tree content. We do not currently run our own application backend for storing tree files, but your browser and Google services remain part of the overall data flow.",
+        priv_analytics_h: "Traffic Analytics",
+        priv_analytics_p: "This platform may use basic analytics tools to understand overall usage (such as aggregated page views or how often specific features are used). These tools are generally designed to collect anonymous, aggregate data and minimize the collection of personal identifiers. Most importantly, these metrics are used solely to improve the app—the platform itself does not intercept, read, or track the actual sensitive contents or names inside your family trees. Additionally, while public pages may be accessible to search engines or AI indexers, the private app page (app.html) currently includes a <code>noindex</code> tag.",
+
+        priv_third_h: "Third-Party Services",
+        priv_third_p: "This platform uses the following Google services: Google Identity Services (sign-in), Google Drive API (file storage and sharing), and Google Picker API (file selection). When you use these features, your data is governed by <a href=\"https://policies.google.com/privacy\" target=\"_blank\" rel=\"noopener\">Google's Privacy Policy</a>. Data may be transmitted and stored across different regions via Google's global infrastructure.",
+        priv_scope_h: "Google Permission Scopes",
+        priv_scope_p: "When you use Drive-backed storage, the app currently requests the <code>drive.file</code> scope so it can create, open, and update the Drive files used with this app. This scope is intended to limit access to app-related files rather than your entire Google Drive.",
+        priv_visibility_h: "Export and Forwarding Visibility",
+        priv_visibility_p: "If you export the family tree as an image or PDF, or send any content to others, that information may be saved, screenshotted, or forwarded outside the platform's control. Before sending, please confirm the content is appropriate for the intended audience, and take extra care with personal information or stories of living relatives.",
+        priv_share_h: "Family Access and Invitations",
+        priv_share_li1: "<strong>Invited Family Members:</strong> The owner can invite family members to view or collaborate on the tree via Google Drive sharing settings. This is the primary sharing method on this platform.",
+        priv_share_li2: "<strong>Exporting and External Sending:</strong> If you send exported images or files externally, please confirm the content is appropriate and avoid publicly displaying personal data of living relatives.",
+        priv_share_li3: "<strong>Data-Handling Principle:</strong> This platform is designed to minimise centralised retention of private family-tree content. During normal use, browser storage and Google services may still process certain account, file, or sharing-related data.",
+        priv_rights_h: "Your Rights",
+        priv_rights_p: "You can delete your family tree file at any time via Google Drive, revoke this app's access through your Google Account settings, and clear local browser storage when needed. For help with deletion, disabling sharing, or any privacy concerns, please contact us below.",
+
+        terms_title: "Terms of Use",
+        terms_updated: "Last updated: April 2026",
+        terms_accept_h: "Acceptance of Terms",
+        terms_accept_p: "By signing in, creating, uploading, saving, sharing, exporting, or continuing to use this platform, you agree to be bound by these terms and the related privacy notice. If you do not agree, please stop using the relevant features.",
+        terms_asis_h: "Nature of Service and No Warranties",
+        terms_asis_p: "This platform is provided on an \"as is\" and \"as available\" basis as a technical utility for family connection only. The maintainer explicitly disclaims any warranties of any kind, express or implied, including but not limited to data loss prevention, freedom from bugs, or uninterrupted services.",
+        terms_account_h: "Account and Access Responsibility",
+        terms_account_p: "You are responsible for the Google account, device, and sign-in state you use with the platform, including storage, sharing, export, and permission actions performed through that account. If you suspect unauthorized access, please review your Google Account and Drive permission settings promptly.",
+        terms_user_h: "User Uploads and Content Legality Requirements",
+        terms_user_li1: "You retain sole and absolute responsibility for the accuracy, legality, copyright status, and your right to collect or authorize the use of all content you upload.",
+        terms_user_li2: "Before entering another person's personal data (names, contact details, etc.), you are expected and obligated to obtain informed consent from that individual (or their legal guardian).",
+        terms_user_li3: "You absolutely may not use this platform for any illegal, defamatory, privacy-invading, or rights-infringing activities under any jurisdiction.",
+        terms_content_h: "Content Ownership and System Authorization",
+        terms_content_p: "You or the relevant rights holder retain ownership of the content you upload. However, to allow the software to function (e.g. log in, display, store, sync, and export), you authorize the platform to process that content strictly as technically necessary.",
+        terms_share_h: "Derivate Risks from Sharing and Exporting",
+        terms_share_p: "If you invite others to view or collaborate, or output images/PDFs, your sensitive data may be copied, downloaded, screenshotted, forwarded, or stored by third parties. The platform bears absolutely no responsibility for third-party actions, and you must independently evaluate the safety and appropriateness of your sharing.",
+        terms_avail_h: "Service Changes and Backup Obligation",
+        terms_avail_p: "This platform is independently maintained. We do not guarantee permanent data preservation. The application may be suspended or discontinued without prior notice due to technical reasons. You are responsible for maintaining independent, regular backups of your data. Never view this platform as your sole backup layer.",
+        terms_thirdp_h: "Uncontrollable Third-Party Service Dependencies",
+        terms_thirdp_p: "This platform heavily relies on external APIs provided by Google. We have no direct control over Google's service availability, policy enforcement, or account statuses. By using this platform, you also agree to <a href=\"https://policies.google.com/terms\" target=\"_blank\" rel=\"noopener\">Google's Terms of Service</a>.",
+        terms_liability_h: "Broad Limitation of Liability",
+        terms_liability_p: "To the maximum extent permitted by applicable law, the platform developers and maintainers shall bear no liability for any direct, indirect, incidental, special, consequential, or punitive damages (including, without limitation, loss of records, family legal disputes, or privacy complaints) resulting from your access to or inability to access the platform.",
+        terms_age_h: "Eligibility and Age Limits",
+        terms_age_p: "You must possess the requisite legal capacity to enter into binding agreements in your jurisdiction. This platform refuses service to users under 13. If you are under 18, you may only log in under the direct and continuous supervision of a legal guardian.",
+        terms_change_h: "Unilateral Right to Update Terms and Disable Functions",
+        terms_change_p: "We unilaterally reserve the right to modify, limit, or suspend any part of the service, and to update these terms based on operational or security needs. Your continued use signifies your acceptance of the finalized rules.",
+
+        disc_title: "Disclaimer",
+        disc_updated: "Last updated: April 2026",
+        disc_nodata_h: "No Data Guarantees and Limitation of Liability",
+        disc_nodata_p: "This platform does not backup or guarantee the retention of ANY of your family data. Your data sits strictly within your connected Google Drive, managed solely by you. The developers bear no liability if data is lost, corrupted, or overwritten due to software bugs, API shifts, or user error. Back up your important records frequently.",
+        disc_nolegal_h: "Family Disputes and Data Privacy Exemption",
+        disc_nolegal_p: "This platform functions solely as a bare presentation layer. You act as the absolute 'Data Controller' for your family tree under local privacy laws. Any family disputes or privacy concerns arising from you inputting relative data or distributing records are purely your responsibility.",
+        disc_asis_h: "Provided 'As Is'",
+        disc_asis_p: "To the maximum threshold allowable by law, all application services and distributed raw code are provided 'As is' and 'As available' without warranties—whether express or implied—including safety and uptime. The creator limits all liability for damages to the greatest extent possible under law.",
+
+        cont_title: "Contact Us",
+        cont_p1: "If you encounter technical issues, have product feedback, or have questions about the privacy policy, please feel free to contact us. Please note: Because this platform has no central database, we physically cannot access, edit, or delete any personal files stored in another user's Google Drive.",
+        cont_email: "Email: ",
+        
+        footer_brand: "Family Heritage",
+        footer_desc: "Dedicated to preserving traditional family bonds and history through modern technology.",
+        footer_links_h: "Links",
+        footer_legal_h: "Legal and Policy",
+        footer_contact_h: "Contact",
+        footer_home: "Home",
+        footer_about: "About Us",
+        footer_privacy: "Privacy Policy",
+        footer_terms: "Terms of Use",
+        footer_disclaimer: "Disclaimer",
+        footer_support: "Support and Contact",
+        footer_app: "Open App",
+        footer_copy: "© 2026 Family Heritage Project. Let love pass on."
+      }
+    };
+
+    function setLang(lang) {
+      localStorage.setItem(LANG_KEY, lang);
+      applyLang(lang);
+    }
+
+    function applyLang(lang) {
+      document.documentElement.lang = lang;
+
+      // Update toggle buttons
+      document.getElementById('lang-zh-btn').classList.toggle('active', lang === 'zh');
+      document.getElementById('lang-en-btn').classList.toggle('active', lang === 'en');
+
+      // Update I18N elements
+      const strings = I18N[lang];
+      document.title = strings.site_title;
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (strings[key]) {
+          el.innerHTML = strings[key];
+        }
+      });
+    }
+
+    // Init
+    const savedLang = localStorage.getItem(LANG_KEY) || 'zh';
+    applyLang(savedLang);
+  </script>
+</body>
+</html>

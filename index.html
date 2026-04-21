@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>家族記憶 — 家族樹與 Google Drive 保存工具</title>
+  <meta name="description" content="家族記憶是一個免費使用的家族樹工具，幫助家庭整理成員關係與基本資料，並讓擁有者將私人家族樹儲存於自己的 Google Drive。">
+  <!-- Update this canonical URL to your final live domain -->
+  <link rel="canonical" href="https://your-domain.com/">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://your-domain.com/">
+  <meta property="og:title" content="家族記憶 — 家族樹與 Google Drive 保存工具">
+  <meta property="og:description" content="免費使用的家族樹工具，整理成員關係與資料，並讓擁有者將私人家族樹儲存於自己的 Google Drive。">
+  <meta property="og:locale" content="zh_HK">
+  <meta property="og:locale:alternate" content="en_US">
+
+  <!-- Twitter / X Card -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="家族記憶 — 家族樹與 Google Drive 保存工具">
+  <meta name="twitter:description" content="免費使用的家族樹工具，整理成員關係與資料，並讓擁有者將私人家族樹儲存於自己的 Google Drive。">
+
+  <!-- Schema.org JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "家族記憶 Family Heritage",
+    "url": "https://your-domain.com/",
+    "description": "A free-to-use family tree tool that helps families organise member relationships and basic records, lets the owner store the private tree in their own Google Drive, and supports exporting the tree as an image or PDF.",
+    "applicationCategory": "LifestyleApplication",
+    "operatingSystem": "Any",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "inLanguage": ["zh-HK", "zh-TW", "en"],
+    "creator": {
+      "@type": "Person",
+      "name": "Family Heritage Project"
+    }
+  }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,700;1,700&family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="site.css">
+  <style>
+    /* Unique Landing Page Styles */
+    .hero {
+      padding: 120px 0 80px;
+      text-align: center;
+      background: radial-gradient(circle at top, #f5f2e9 0%, var(--p) 70%);
+    }
+    .hero h1 { font-size: 56px; line-height: 1.1; margin-bottom: 24px; color: var(--ink); }
+    .hero p { font-size: 20px; color: var(--ink2); max-width: 700px; margin: 0 auto 40px; }
+    .hero-ctas { display: flex; gap: 16px; justify-content: center; }
+
+    .story-section { background: var(--p); }
+    .story-card { max-width: 800px; margin: 0 auto; padding: 60px; text-align: left; }
+    .story-content p { font-size: 18px; margin-bottom: 24px; color: var(--ink2); line-height: 1.8; }
+    .story-content p:last-child { margin-bottom: 0; }
+
+    .lang-toggle {
+      display: flex;
+      background: var(--p2);
+      border: 1px solid var(--bd);
+      border-radius: 99px;
+      padding: 2px;
+      margin-left: 20px;
+    }
+    .lang-btn {
+      padding: 4px 12px;
+      border-radius: 99px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+      background: transparent;
+      color: var(--ink3);
+    }
+    .lang-btn.active {
+      background: #fff;
+      color: var(--ink);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    .preview-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; margin-top: 64px; }
+    .preview-card { 
+      height: 300px; 
+      background: var(--p2); 
+      border-radius: 20px; 
+      border: 1px solid var(--bd); 
+      overflow: hidden;
+      position: relative;
+      padding: 32px;
+    }
+    .preview-card h3 { font-size: 24px; margin-bottom: 8px; }
+    .preview-card p { font-size: 14px; color: var(--ink3); }
+    .mock-ui { 
+      position: absolute; 
+      bottom: -20px; 
+      right: -20px; 
+      width: 80%; 
+      height: 180px; 
+      background: #fff; 
+      border-radius: 12px; 
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      padding: 16px;
+    }
+
+    .stats-section { background: var(--ink); color: var(--p); }
+    .stats-section .section-title { color: var(--p); }
+    .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; text-align: center; }
+    .stat-item h2 { font-size: 28px; color: var(--gold); margin-bottom: 10px; }
+    .stat-item p { font-size: 15px; opacity: 0.82; font-weight: 500; line-height: 1.6; max-width: 260px; margin: 0 auto; }
+
+    .features-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 32px; }
+    .feature-card { display: flex; gap: 24px; align-items: flex-start; }
+    .feature-icon { 
+      width: 48px; height: 48px; border-radius: 12px; background: var(--p2); 
+      display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0;
+    }
+
+    .privacy-box { 
+      background: #fff; border: 1px solid var(--bd); border-radius: 24px; padding: 48px; 
+      display: flex; gap: 48px; align-items: center;
+    }
+    .privacy-content { flex: 1; }
+    .privacy-tag { 
+      display: inline-block; padding: 4px 12px; background: var(--fbg); color: var(--fac); 
+      border-radius: 99px; font-size: 12px; font-weight: 700; margin-bottom: 16px;
+    }
+
+  </style>
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="container nav-wrap">
+      <a href="index.html" class="logo" data-i18n="nav_brand">家族記憶</a>
+      <nav class="nav-links">
+        <a href="index.html" class="nav-link" data-i18n="nav_home">首頁</a>
+        <a href="app.html" class="btn btn-pri" data-i18n="nav_app">開啟應用</a>
+        
+        <div class="lang-toggle">
+          <button class="lang-btn" id="lang-zh-btn" onclick="setLang('zh')">ZH</button>
+          <button class="lang-btn" id="lang-en-btn" onclick="setLang('en')">EN</button>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container">
+        <h1 data-i18n="hero_title">串連過去與未來，<br>珍藏每一段家族故事。</h1>
+        <p data-i18n="hero_subtitle">建立家族樹、整理成員資料與親屬關係。已登入的擁有者可將私人家族樹儲存於自己的 Google Drive，讓家人日後更容易回來查看、延續與更新。</p>
+        <div class="hero-ctas">
+          <a href="app.html" class="btn btn-gold" data-i18n="cta_create">建立家族樹</a>
+          <a href="app.html" class="btn btn-pri" data-i18n="cta_open">開啟我的家族</a>
+          <a href="app.html" class="btn btn-sec" data-i18n="cta_view">開啟共享家族樹</a>
+        </div>
+
+        <div class="preview-grid">
+          <div class="preview-card">
+            <h3 data-i18n="preview_tree">家族結構</h3>
+            <p data-i18n="preview_tree_desc">以清晰的視覺方式整理跨世代成員與親屬關係。</p>
+            <div class="mock-ui" style="display:flex; gap:10px; align-items:center;">
+              <div style="width:40px; height:40px; border-radius:50%; background:var(--mac);"></div>
+              <div style="flex:1; height:8px; background:var(--p3); border-radius:4px;"></div>
+              <div style="width:20px; height:20px; border-radius:50%; background:var(--gold);"></div>
+            </div>
+          </div>
+          <div class="preview-card">
+            <h3 data-i18n="preview_drive">私人儲存</h3>
+            <p data-i18n="preview_drive_desc">擁有者可將私人家族樹存放於自己的 Google Drive，方便之後重新開啟同一棵樹。</p>
+            <div class="mock-ui" style="padding:10px;">
+              <div style="width:100%; height:100%; background:var(--p2); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:40px;">☁️</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="features">
+      <div class="container">
+        <h2 class="section-title" data-i18n="features_title">核心功能</h2>
+        <p class="section-subtitle" data-i18n="features_subtitle">聚焦於目前可實際使用的家族樹整理、保存與匯出流程。</p>
+        
+        <div class="features-grid">
+          <div class="card feature-card">
+            <div class="feature-icon">🌳</div>
+            <div>
+              <h3 data-i18n="feat_tree">視覺化家族樹</h3>
+              <p data-i18n="feat_tree_desc">以清晰的樹狀介面整理跨世代成員、分支與親屬關係。</p>
+            </div>
+          </div>
+          <div class="card feature-card">
+            <div class="feature-icon">📁</div>
+            <div>
+              <h3 data-i18n="feat_members">成員資料管理</h3>
+              <p data-i18n="feat_members_desc">整理每位成員的姓名、關係、基本資料與備註，讓家族資料更容易持續更新。</p>
+            </div>
+          </div>
+          <div class="card feature-card">
+            <div class="feature-icon">☁️</div>
+            <div>
+              <h3 data-i18n="feat_drive">擁有者儲存到 Google Drive</h3>
+              <p data-i18n="feat_drive_desc">已登入的擁有者可將私人家族樹儲存於自己的 Google Drive，之後更容易重新開啟與延續同一棵樹。</p>
+            </div>
+          </div>
+          <div class="card feature-card">
+            <div class="feature-icon">🖨️</div>
+            <div>
+              <h3 data-i18n="feat_export">匯出家族樹</h3>
+              <p data-i18n="feat_export_desc">可將家族樹匯出為圖片或 PDF，方便列印、備份或與家人分享。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="story-section" id="story">
+      <div class="container">
+        <div class="card story-card">
+          <h2 class="section-title" data-i18n="story_title">這個計劃的由來</h2>
+          
+          <div id="story-zh" class="story-content lang-zh">
+            <p>呢個計劃嘅想法，源於一次清明拜山。</p>
+            <p>嗰次我發覺，一齊上山嘅親戚比以前少咗好多。有啲長輩已經離開咗，有啲年紀大咗，亦有啲親戚搬咗去其他地方，未必再返到嚟。</p>
+            <p>嗰陣我開始諗，再過幾年，下一代可能會更加少機會知道，自己原來來自一個咁大嘅家庭。</p>
+            <p>對我嚟講，清明同祭祖唔只係傳統，亦提醒我哋記得自己的來處，感激建立呢個家庭嘅長輩。呢個 project 亦係受到感恩文化同祭祖文化所啟發。</p>
+            <p>所以我想將家族成員嘅名字、關係同故事整理好，留低一份可以延續落去嘅記錄。我亦希望將呢個 app 分享出嚟，幫到其他家庭保存自己嘅家族記憶。</p>
+          </div>
+
+          <div id="story-en" class="story-content lang-en" style="display:none">
+            <p>The idea for this project came from a Qingming grave-sweeping visit.</p>
+            <p>That day, I noticed that far fewer relatives were making the visit together than before. Some elders had already passed away, some had grown older, and some relatives had moved elsewhere and might not be able to come back again.</p>
+            <p>It made me think that, in a few more years, the next generation may have even fewer chances to know that they come from such a large family.</p>
+            <p>To me, Qingming and ancestor remembrance are not only traditions. They are also reminders to remember where we come from, and to be grateful to the elders who built this family. This project is inspired by that spirit of gratitude, remembrance, and continuity.</p>
+            <p>So I wanted to organize the names, relationships, and stories of our family members, and leave behind a record that can continue into the future. I also hope that by sharing this app, it can help other families preserve their own family memory.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="privacy">
+      <div class="container">
+        <div class="privacy-box">
+          <div class="privacy-content">
+            <span class="privacy-tag" data-i18n="privacy_tag">私隱保護與政策</span>
+            <h2 data-i18n="privacy_title">由家族自行整理與管理</h2>
+            <p style="margin-bottom:24px; color:var(--ink2);" data-i18n="privacy_desc">我們深知家族資料的珍貴與私密。現行版本已支援已登入擁有者將私人家族樹存放於自己的 Google Drive；部分功能與快取資料仍屬過渡狀態，可能保留在瀏覽器本地儲存或因版本而有所差異。</p>
+            <a href="trust.html" class="btn btn-sec" data-i18n="privacy_btn">了解私隱政策</a>
+          </div>
+          <div style="font-size:120px; opacity:0.1; user-select:none;">📜</div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <span class="logo" data-i18n="footer_brand">家族記憶</span>
+          <p class="footer-desc" data-i18n="footer_desc">致力於用現代技術保存傳統親情與家族歷史。</p>
+        </div>
+        <div class="footer-col">
+          <h4 data-i18n="footer_links_h">連結</h4>
+          <ul class="footer-links">
+            <li><a href="index.html" data-i18n="footer_home">首頁</a></li>
+            <li><a href="app.html" data-i18n="footer_app">開啟應用</a></li>
+            <li><a href="trust.html#about" data-i18n="footer_about">關於我們</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4 data-i18n="footer_legal_h">法務與政策</h4>
+          <ul class="footer-links">
+            <li><a href="trust.html#terms" data-i18n="footer_terms">使用條款</a></li>
+            <li><a href="trust.html#privacy" data-i18n="footer_privacy">私隱政策</a></li>
+            <li><a href="trust.html#disclaimer" data-i18n="footer_disclaimer">免責聲明</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4 data-i18n="footer_contact_h">聯絡</h4>
+          <ul class="footer-links">
+            <li><a href="trust.html#contact" data-i18n="footer_support">聯絡我們</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p data-i18n="footer_copy">© 2026 Family Heritage Project. 讓愛傳承。</p>
+        <div style="display:flex; gap:20px;">
+          <span data-i18n="footer_version">內容與功能持續更新</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const LANG_KEY = 'family-heritage-lang';
+    
+    const I18N = {
+      zh: {
+        site_title: "家族記憶",
+        nav_brand: "家族記憶",
+        nav_home: "首頁",
+        nav_app: "開啟應用",
+        hero_title: "串連過去與未來，<br>珍藏每一段家族故事。",
+        hero_subtitle: "建立家族樹、整理成員資料與親屬關係。已登入的擁有者可將私人家族樹儲存於自己的 Google Drive，讓家人日後更容易回來查看、延續與更新。",
+        cta_create: "建立家族樹",
+        cta_open: "開啟我的家族",
+        cta_view: "開啟共享家族樹",
+        preview_tree: "家族結構",
+        preview_tree_desc: "以清晰的視覺方式整理跨世代成員與親屬關係。",
+        preview_drive: "私人儲存",
+        preview_drive_desc: "擁有者可將私人家族樹存放於自己的 Google Drive，方便之後重新開啟同一棵樹。",
+        features_title: "核心功能",
+        features_subtitle: "聚焦於目前可實際使用的家族樹整理、保存與匯出流程。",
+        feat_tree: "視覺化家族樹",
+        feat_tree_desc: "以清晰的樹狀介面整理跨世代成員、分支與親屬關係。",
+        feat_members: "成員資料管理",
+        feat_members_desc: "整理每位成員的姓名、關係、基本資料與備註，讓家族資料更容易持續更新。",
+        feat_drive: "擁有者儲存到 Google Drive",
+        feat_drive_desc: "已登入的擁有者可將私人家族樹儲存於自己的 Google Drive，之後更容易重新開啟與延續同一棵樹。",
+        feat_export: "匯出家族樹",
+        feat_export_desc: "可將家族樹匯出為圖片或 PDF，方便列印、備份或與家人分享。",
+        story_title: "這個計劃的由來",
+        privacy_tag: "私隱保護與政策",
+        privacy_title: "由家族自行整理與管理",
+        privacy_desc: "我們深知家族資料的珍貴與私密。現行版本已支援已登入擁有者將私人家族樹存放於自己的 Google Drive；部分功能與快取資料仍屬過渡狀態，可能保留在瀏覽器本地儲存或因版本而有所差異。",
+        privacy_btn: "了解私隱政策",
+        footer_brand: "家族記憶",
+        footer_desc: "致力於用現代技術保存傳統親情與家族歷史。",
+        footer_links_h: "連結",
+        footer_legal_h: "法務與政策",
+        footer_contact_h: "聯絡",
+        footer_home: "首頁",
+        footer_app: "開啟應用",
+        footer_about: "關於我們",
+        footer_privacy: "私隱政策",
+        footer_terms: "使用條款",
+        footer_disclaimer: "免責聲明",
+        footer_support: "聯絡我們",
+        footer_copy: "© 2026 Family Heritage Project. 讓愛傳承。",
+        footer_version: "內容與功能持續更新"
+      },
+      en: {
+        site_title: "Family Heritage",
+        nav_brand: "Family Heritage",
+        nav_home: "Home",
+        nav_app: "Open App",
+        hero_title: "Connecting Past and Future,<br>Preserving Every Family Story.",
+        hero_subtitle: "Build a family tree, organize member details and relationships, and let the signed-in owner store the private tree in their own Google Drive so relatives can more easily return, continue, view, and update it over time.",
+        cta_create: "Create Tree",
+        cta_open: "Open My Tree",
+        cta_view: "Open Shared Tree",
+        preview_tree: "Family Structure",
+        preview_tree_desc: "Organize members and relationships across generations in a clear visual tree.",
+        preview_drive: "Private Drive Storage",
+        preview_drive_desc: "The owner can store the private family tree in their own Google Drive and reopen the same tree later.",
+        features_title: "Core Features",
+        features_subtitle: "Focused on the family-tree workflows, storage, and exports that are available now.",
+        feat_tree: "Visual Family Tree",
+        feat_tree_desc: "Arrange members, branches, and relationships across generations in a clear tree view.",
+        feat_members: "Member Record Management",
+        feat_members_desc: "Maintain names, relationships, basic details, and notes so the tree can keep evolving over time.",
+        feat_drive: "Owner Storage in Google Drive",
+        feat_drive_desc: "A signed-in owner can store the private family tree in their own Google Drive and reopen the same tree later.",
+        feat_export: "Export Family Tree",
+        feat_export_desc: "Export the family tree as an image or PDF for printing, backup, or sharing with relatives.",
+        story_title: "Why This Project Exists",
+        privacy_tag: "Privacy and Legal Info",
+        privacy_title: "Family Managed and Owned",
+        privacy_desc: "We understand how sensitive family records can be. The current version already supports Drive-backed private tree storage for signed-in owners, while some features and cached data remain transitional and may still rely on browser local storage or vary by version.",
+        privacy_btn: "Learn About Privacy",
+        footer_brand: "Family Heritage",
+        footer_desc: "Dedicated to preserving traditional family bonds and history through modern technology.",
+        footer_links_h: "Links",
+        footer_legal_h: "Legal and Policy",
+        footer_contact_h: "Contact",
+        footer_home: "Home",
+        footer_app: "Open App",
+        footer_about: "About Us",
+        footer_privacy: "Privacy Policy",
+        footer_terms: "Terms of Use",
+        footer_disclaimer: "Disclaimer",
+        footer_support: "Support and Contact",
+        footer_copy: "© 2026 Family Heritage Project. Let love pass on.",
+        footer_version: "Content and features continue to evolve"
+      }
+    };
+
+    function setLang(lang) {
+      localStorage.setItem(LANG_KEY, lang);
+      applyLang(lang);
+    }
+
+    function applyLang(lang) {
+      document.documentElement.lang = lang;
+      
+      // Update toggle buttons
+      document.getElementById('lang-zh-btn').classList.toggle('active', lang === 'zh');
+      document.getElementById('lang-en-btn').classList.toggle('active', lang === 'en');
+
+      // Update I18N elements
+      const strings = I18N[lang];
+      document.title = strings.site_title;
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (strings[key]) {
+          if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+            el.placeholder = strings[key];
+          } else {
+            el.innerHTML = strings[key];
+          }
+        }
+      });
+
+      // Special handling for Story section
+      document.getElementById('story-zh').style.display = lang === 'zh' ? 'block' : 'none';
+      document.getElementById('story-en').style.display = lang === 'en' ? 'block' : 'none';
+
+    }
+
+    // Init
+    const savedLang = localStorage.getItem(LANG_KEY) || 'zh';
+    applyLang(savedLang);
+  </script>
+</body>
+</html>
