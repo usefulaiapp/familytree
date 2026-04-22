@@ -104,7 +104,7 @@ This app is designed so that the main family-tree file is stored in Google Drive
 - This button reloads the current tree file from Google Drive.
 - It is useful when you want to refresh the tree from the saved Drive version, including after another collaborator has made changes.
 - It can also help you discard unsaved local state by reloading the stored Drive version of the tree.
-- 
+  
 ## Important notes
 
 - This is an independently maintained project and some parts are still evolving.
