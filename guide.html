@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>使用教學 / User Guide — 家族記憶</title>
+  <meta name="description" content="家族記憶的使用教學，了解如何管理、分享與編輯您的私人家族樹。">
+  <link rel="canonical" href="https://your-domain.com/guide.html">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://your-domain.com/guide.html">
+  <meta property="og:title" content="使用教學 / User Guide — 家族記憶">
+  <meta property="og:description" content="家族記憶的使用教學，了解如何管理、分享與編輯您的私人家族樹。">
+  <meta property="og:locale" content="zh_HK">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,700;1,700&family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="site.css">
+  <style>
+    .trust-hero { padding: 80px 0 48px; background: var(--p2); border-bottom: 1px solid var(--bd); }
+    .trust-grid { display: grid; grid-template-columns: 1fr; gap: 32px; margin: 48px auto 0; max-width: 920px; }
+    .trust-card { padding: 40px; }
+    .trust-card h2 { margin-bottom: 20px; color: var(--ink); border-left: 4px solid var(--gold); padding-left: 16px; }
+    .trust-card h3 { margin: 24px 0 12px; color: var(--ink); font-size: 18px; }
+    .trust-card p { margin-bottom: 16px; color: var(--ink2); line-height: 1.6; }
+    .trust-card ul { margin-left: 20px; margin-bottom: 16px; color: var(--ink2); line-height: 1.6; }
+    .trust-card li { margin-bottom: 8px; }
+
+    .trust-hero .section-subtitle { max-width: 720px; }
+    .toc { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+    .toc a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      padding: 10px 18px;
+      border-radius: 99px;
+      background: #fff;
+      border: 1px solid rgba(44, 36, 32, 0.12);
+      box-shadow: 0 4px 12px rgba(44, 36, 32, 0.05);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ink2);
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .toc a:hover { background: var(--p2); color: var(--ink); border-color: var(--gold2); transform: translateY(-1px); }
+
+    .lang-toggle {
+      display: flex;
+      background: var(--p2);
+      border: 1px solid var(--bd);
+      border-radius: 99px;
+      padding: 3px;
+      margin-left: 20px;
+    }
+    .lang-btn {
+      min-height: 38px;
+      min-width: 48px;
+      padding: 6px 14px;
+      border-radius: 99px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+      background: transparent;
+      color: var(--ink3);
+    }
+    .lang-btn.active {
+      background: #fff;
+      color: var(--ink);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    .site-header .nav-links .btn {
+      min-height: 44px;
+      padding: 10px 24px;
+    }
+
+    /* ── Tablet portrait ≤ 768px ── */
+    @media (max-width: 768px) {
+      .trust-hero { padding: 60px 0 36px; }
+      .trust-card { padding: 28px; }
+      .trust-card h2 { font-size: 22px; padding-left: 12px; }
+      .trust-card h3 { font-size: 16px; }
+      .toc { gap: 8px; }
+      .toc a { padding: 8px 14px; font-size: 13px; min-height: 38px; }
+      .lang-toggle { margin-left: 12px; }
+      .lang-btn { min-height: 34px; min-width: 42px; padding: 5px 12px; }
+      .site-header .nav-links .btn { min-height: 40px; padding: 8px 18px; }
+    }
+
+    /* ── Large phones ≤ 480px ── */
+    @media (max-width: 480px) {
+      .trust-hero { padding: 48px 0 28px; }
+      .trust-card { padding: 20px; }
+      .trust-card h2 { font-size: 20px; padding-left: 10px; }
+      .trust-card h3 { font-size: 15px; margin: 18px 0 10px; }
+      .trust-card p { font-size: 14px; }
+      .trust-card ul { margin-left: 16px; font-size: 14px; }
+      .trust-grid { gap: 20px; margin-top: 32px; }
+      .toc { gap: 6px; justify-content: center; }
+      .toc a { padding: 7px 11px; font-size: 12px; min-height: 34px; line-height:1.2; }
+      .lang-toggle { margin-left: 8px; }
+      .lang-btn { min-height: 32px; min-width: 38px; padding: 4px 10px; font-size: 11px; }
+      .site-header .nav-links .btn { min-height: 36px; padding: 7px 14px; font-size: 12px; }
+    }
+
+    /* ── Small phones ≤ 375px ── */
+    @media (max-width: 375px) {
+      .trust-card { padding: 16px; }
+      .trust-card h2 { font-size: 18px; }
+      .trust-card p { font-size: 13px; }
+      .toc a { font-size: 11.5px; padding: 7px 10px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="container nav-wrap">
+      <a href="index.html" class="logo" data-i18n="nav_brand">家族記憶</a>
+      <nav class="nav-links">
+        <a href="index.html" class="nav-link" data-i18n="nav_home">首頁</a>
+        <a href="guide.html" class="nav-link active" data-i18n="nav_guide">使用教學</a>
+        <a href="app.html" class="btn btn-pri" data-i18n="nav_app">開啟應用</a>
+
+        <div class="lang-toggle">
+          <button class="lang-btn" id="lang-zh-btn" onclick="setLang('zh')">ZH</button>
+          <button class="lang-btn" id="lang-en-btn" onclick="setLang('en')">EN</button>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="trust-hero">
+      <div class="container">
+        <h1 class="section-title" data-i18n="hero_title">使用教學</h1>
+        <p class="section-subtitle" data-i18n="hero_subtitle">了解如何建立、保存、共享與延續您的私人家族樹。</p>
+        <div class="toc">
+          <a href="#purpose" data-i18n="toc_purpose">計劃方向</a>
+          <a href="#features" data-i18n="toc_features">功能導覽</a>
+          <a href="#how" data-i18n="toc_how">開始使用</a>
+          <a href="#workflows" data-i18n="toc_workflows">核心流程</a>
+          <a href="#notes" data-i18n="toc_notes">注意事項</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="trust-content">
+      <div class="container">
+        <div class="trust-grid" style="margin-bottom:80px;">
+
+          <!-- Purpose & Architecture -->
+          <div class="card trust-card" id="purpose" data-i18n="purpose_html">
+            <h2>計劃方向與架構</h2>
+            <p>這個計劃的目的，是幫助家庭整理成員關係、保存家族記憶，並以較由擁有者掌握的方式維護私人家族樹。</p>
+            <p><strong>目前的主要方向：</strong></p>
+            <ul>
+              <li>以私隱與審慎使用為前提</li>
+              <li>以家族／內部使用為主</li>
+              <li>核心功能以免費使用為原則</li>
+              <li>不以中央後端代管私人家族樹資料</li>
+              <li>由擁有者掌握主要私人儲存位置</li>
+              <li>擁有者的私人家族樹主要存放於其自己的 Google Drive</li>
+              <li>受邀家族成員可透過核准的共享流程存取家族樹</li>
+              <li>支援匯出為圖片或 PDF</li>
+              <li>私人家族樹內容主要面向擁有者與受邀家族成員</li>
+            </ul>
+
+            <h3>目前的架構與儲存方式</h3>
+            <p>本計劃刻意避免以中央後端代管私人家族樹資料。</p>
+            <ul>
+              <li>擁有者的私人家族樹主要存放在其自己的 Google Drive。</li>
+              <li>瀏覽器本地儲存目前仍可能用於有限的快取資料或過渡狀態。</li>
+              <li>Google 登入與 Drive 權限，是目前私人家族樹主要流程的一部分。</li>
+            </ul>
+            <p>這樣的設計有助減少平台集中持有敏感家族資料，亦降低長期後端與安全維護負擔。</p>
+          </div>
+
+          <!-- Features -->
+          <div class="card trust-card" id="features" data-i18n="features_html">
+            <h2>功能與頁面導覽</h2>
+            <p>目前應用程式的主要導覽包含以下幾個頁面：</p>
+            <ul>
+              <li><strong>家族樹：</strong>主要的視覺化家族樹頁面。您可以瀏覽成員與關係、點擊人物查看詳情、在有權限時編輯資料，並將家族樹匯出為 PNG 或 PDF。</li>
+              <li><strong>社群連結：</strong>整理外部連結，方便家族成員保持聯繫。</li>
+              <li><strong>成員表：</strong>以表格方式查看所有家族成員，方便搜尋、排序、快速編輯，以及匯出 CSV 或 Excel。</li>
+              <li><strong>成員管理：</strong>主要供家族樹擁有者使用，可加入受邀家族成員、調整檢視或編輯角色，並管理共享流程。</li>
+            </ul>
+          </div>
+
+          <!-- How to Use -->
+          <div class="card trust-card" id="how" data-i18n="how_html">
+            <h2>開始使用</h2>
+            <p>目前這個應用主要有兩種開始方式：</p>
+            <ul>
+              <li><strong>登入</strong>：適合建立與管理主要家族樹的擁有者。</li>
+              <li><strong>加入</strong>：適合已受邀查看或協作現有家族樹的家族成員。</li>
+            </ul>
+
+            <h3>如果您是擁有者</h3>
+            <ol style="margin-left:20px; margin-bottom:16px; color:var(--ink2); line-height:1.6;">
+              <li>開啟應用後，使用您的 Google 帳號點選<strong>登入</strong>。</li>
+              <li>建立新的家族樹，或重新開啟您之前儲存的家族樹。</li>
+              <li>加入家族成員、設定親屬關係，以及填寫基本人物資料。</li>
+              <li>按下<strong>儲存</strong>，將家族樹資料同步到您自己的 Google Drive。</li>
+              <li>日後只要再次登入，應用便可重新開啟您已儲存的家族樹。</li>
+              <li>如有需要，亦可把家族樹匯出為圖片或 PDF，方便列印或留存。</li>
+            </ol>
+
+            <h3>共享目前如何運作</h3>
+            <p>目前私人家族樹的共享，主要透過 Google Drive 進行。</p>
+            <ul>
+              <li><strong>儲存：</strong>擁有者先把主要家族樹檔案儲存在自己的 Google Drive。</li>
+              <li><strong>管理存取：</strong>在<strong>成員管理</strong>頁面中，擁有者或具備編輯權限的人可輸入受邀家族成員的 Gmail 地址。</li>
+              <li><strong>設定角色：</strong>受邀者可被設定為<strong>編輯者</strong>或<strong>檢視者</strong>。</li>
+              <li><strong>透過 Drive 共享：</strong>應用會使用 Google Drive 權限，把相關家族樹檔案共享給該 Gmail 帳號。</li>
+              <li><strong>加入：</strong>受邀家族成員登入後，即可開啟共享的家族樹。</li>
+              <li><strong>協作：</strong>視乎角色權限，受邀者可以檢視家族樹，或協助更新內容。</li>
+            </ul>
+            <p>簡單來說，目前應用主要有三種角色：<strong>擁有者</strong>、<strong>編輯者</strong>及<strong>檢視者</strong>。擁有者與編輯者可在<strong>成員管理</strong>頁面處理共享，而受邀者則以 Gmail 地址加入並取得相應權限。</p>
+
+            <h3>如果您是受邀家族成員</h3>
+            <ol style="margin-left:20px; margin-bottom:16px; color:var(--ink2); line-height:1.6;">
+              <li>開啟應用。您可以從邀請連結進入，或在家族樹已共享給您的情況下直接開啟應用。</li>
+              <li>點選<strong>加入</strong>，或使用應用內開啟共享檔案的流程。</li>
+              <li>使用與邀請相同的 Google 帳號（Gmail 地址）登入。</li>
+              <li>開啟共享的家族樹檔案；在目前流程中，這可能包括透過 Google Picker 選擇共享的 <code>private_tree.json</code> 檔案。</li>
+              <li>依照您獲得的權限檢視家族樹，或協助更新內容。</li>
+            </ol>
+
+            <h3>簡單理解</h3>
+            <ul>
+              <li><strong>擁有者</strong>登入後，把主要私人家族樹保存在自己的 Google Drive。</li>
+              <li>受邀家族成員則透過<strong>加入</strong>開啟已共享給他們的家族樹。</li>
+              <li>本應用主要面向家族內部使用，而不是公開瀏覽。</li>
+            </ul>
+          </div>
+
+          <!-- Core Workflows -->
+          <div class="card trust-card" id="workflows" data-i18n="workflows_html">
+            <h2>核心流程：編輯、儲存、復原與重新載入</h2>
+            <p>本應用的設計方向，是讓主要家族樹檔案存放於 Google Drive，而不是集中保存在平台資料庫。</p>
+
+            <h3>1. 編輯與儲存</h3>
+            <ul>
+              <li><strong>編輯人物：</strong>您可以在家族樹頁面或成員表中開啟人物資料並進行編輯。</li>
+              <li><strong>畫面上的變更：</strong>當您儲存修改或新增親屬時，變更會先立即反映在應用畫面中。</li>
+              <li><strong>儲存行為：</strong>目前版本中，這些變更通常會盡快經由應用的儲存流程寫回，而不一定依賴另一個分離的最終提交按鈕。</li>
+              <li><strong>Drive 儲存：</strong>當 Google Drive 存取已就緒時，應用會嘗試把更新後的家族樹檔案寫回 Google Drive。若 Google API 或權杖尚未就緒，應用亦可能先保留本地狀態，再於稍後同步。</li>
+            </ul>
+
+            <h3>2. 復原與重做</h3>
+            <ul>
+              <li>頁面頂部設有<strong>復原</strong>與<strong>重做</strong>按鈕。</li>
+              <li>這些按鈕是目前工作階段內回到較早修改狀態或重新套用修改的主要工具。</li>
+            </ul>
+
+            <h3>3. 從 Drive 重新載入</h3>
+            <ul>
+              <li>當您開啟的是 Drive-backed 家族樹時，頂部亦會顯示<strong>從 Drive 重新載入</strong>。</li>
+              <li>此按鈕會重新讀取目前儲存在 Google Drive 的家族樹檔案。</li>
+              <li>如果另一位協作者已更新內容，這個按鈕可用來取得最新 Drive 版本。</li>
+              <li>它亦可協助您放棄未同步的本地變更，並以 Drive 中已儲存的版本為準。</li>
+            </ul>
+          </div>
+
+          <!-- Important Notes -->
+          <div class="card trust-card" id="notes" data-i18n="notes_html">
+            <h2>注意事項</h2>
+            <ul>
+              <li>本計劃由獨立維護者持續更新，部分功能仍在調整中。</li>
+              <li>某些功能或儲存行為目前仍可能處於過渡狀態。</li>
+              <li>當您建立或分享家族樹副本時，請自行留意該副本如何被保存、共享或轉發。</li>
+              <li>處理仍在世親屬的個人資料、照片或故事時，請特別審慎。</li>
+              <li>私人家族樹主要面向擁有者與受邀家族成員使用。</li>
+            </ul>
+
+            <h3 style="margin-top:32px;">開發說明</h3>
+            <p>此程式碼庫為公開狀態，方便檢視與審閱程式碼。整個計劃的方向，是主要依靠擁有者自己的 Google Drive 儲存私人家族樹，以減少平台集中保存私人家族資料。</p>
+            <p>如需在本地執行應用，請不要直接從磁碟開啟 HTML 檔案，而應改用本地網頁伺服器。您亦需要自行建立 Google Cloud 專案、產生 OAuth 憑證、填入程式碼，並在 Google Cloud Console 中設定對應本地網址的允許 JavaScript origins。</p>
+
+            <h3 style="margin-top:32px;">目前狀態</h3>
+            <p>此程式碼庫目前仍在持續測試與調整中。</p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <span class="logo" data-i18n="footer_brand">家族記憶</span>
+          <p class="footer-desc" data-i18n="footer_desc">致力於用現代技術保存傳統親情與家族歷史。</p>
+        </div>
+        <div class="footer-col">
+          <h4 data-i18n="footer_links_h">連結</h4>
+          <ul class="footer-links">
+            <li><a href="index.html" data-i18n="footer_home">首頁</a></li>
+            <li><a href="guide.html" data-i18n="nav_guide">使用教學</a></li>
+            <li><a href="app.html" data-i18n="footer_app">開啟應用</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4 data-i18n="footer_legal_h">法務與政策</h4>
+          <ul class="footer-links">
+            <li><a href="trust.html#terms" data-i18n="footer_terms">使用條款</a></li>
+            <li><a href="trust.html#privacy" data-i18n="footer_privacy">私隱政策</a></li>
+            <li><a href="trust.html#disclaimer" data-i18n="footer_disclaimer">免責聲明</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4 data-i18n="footer_contact_h">聯絡</h4>
+          <ul class="footer-links">
+            <li><a href="trust.html#contact" data-i18n="footer_support">支援與聯絡</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p data-i18n="footer_copy">© 2026 Family Heritage Project. Let love pass on.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Guide page I18N
+    const GUIDE_LANG_KEY = 'family-heritage-guide-lang';
+    const I18N = {
+      zh: {
+        nav_brand: "家族記憶",
+        nav_home: "首頁",
+        nav_guide: "使用教學",
+        nav_app: "開啟應用",
+        hero_title: "使用教學",
+        hero_subtitle: "了解如何建立、保存、共享與延續您的私人家族樹。",
+        toc_purpose: "計劃方向",
+        toc_features: "頁面導覽",
+        toc_how: "開始使用",
+        toc_workflows: "核心流程",
+        toc_notes: "注意事項",
+        purpose_html: `<h2>計劃方向與架構</h2>
+            <p>這個計劃的目的，是幫助家庭整理成員關係、保存家族記憶，並以較由擁有者自行掌握的方式維護私人家族樹。</p>
+            <p><strong>目前的主要方向：</strong></p>
+            <ul>
+              <li>以私隱與審慎使用為前提</li>
+              <li>以家族／內部使用為主</li>
+              <li>核心功能以免費使用為原則</li>
+              <li>不以中央後端代管私人家族樹資料</li>
+              <li>由擁有者掌握主要私人儲存位置</li>
+              <li>擁有者的私人家族樹主要存放於其自己的 Google Drive</li>
+              <li>受邀家族成員可透過核准的共享流程存取家族樹</li>
+              <li>支援匯出為圖片或 PDF</li>
+              <li>私人家族樹內容主要面向擁有者與受邀家族成員</li>
+            </ul>
+            <h3>目前的架構與儲存方式</h3>
+            <p>本計劃刻意避免以中央後端代管私人家族樹資料。</p>
+            <ul>
+              <li>擁有者的私人家族樹主要存放在其自己的 Google Drive。</li>
+              <li>瀏覽器本地儲存目前仍可能用於有限的快取資料或過渡狀態。</li>
+              <li>Google 登入與 Drive 權限，是目前私人家族樹主要流程的一部分。</li>
+            </ul>
+            <p>這樣的設計有助減少平台集中持有敏感家族資料，亦降低長期後端與安全維護負擔。</p>`,
+        features_html: `<h2>頁面與功能導覽</h2>
+            <p>目前應用程式的主要導覽包含以下幾個頁面：</p>
+            <ul>
+              <li><strong>家族樹：</strong>主要的視覺化家族樹頁面。您可以瀏覽成員與關係、點擊人物查看詳情、在有權限時編輯資料，並將家族樹匯出為 PNG 或 PDF。</li>
+              <li><strong>社群連結：</strong>整理外部連結，方便家族成員保持聯繫。</li>
+              <li><strong>成員表：</strong>以表格方式查看所有家族成員，方便搜尋、排序、快速編輯，以及匯出 CSV 或 Excel。</li>
+              <li><strong>成員管理：</strong>主要供家族樹擁有者使用，可加入受邀家族成員、調整檢視或編輯角色，並管理共享流程。</li>
+            </ul>`,
+        how_html: `<h2>開始使用</h2>
+            <p>目前這個應用主要有兩種開始方式：</p>
+            <ul>
+              <li><strong>登入</strong>：適合建立與管理主要家族樹的擁有者。</li>
+              <li><strong>加入</strong>：適合已受邀查看或協作現有家族樹的家族成員。</li>
+            </ul>
+            <h3>如果您是擁有者</h3>
+            <ol style="margin-left:20px; margin-bottom:16px; color:var(--ink2); line-height:1.6;">
+              <li>開啟應用後，使用您的 Google 帳號點選<strong>登入</strong>。</li>
+              <li>建立新的家族樹，或重新開啟您之前儲存的家族樹。</li>
+              <li>加入家族成員、設定親屬關係，以及填寫基本人物資料。</li>
+              <li>按下<strong>儲存</strong>，將家族樹資料同步到您自己的 Google Drive。</li>
+              <li>日後只要再次登入，應用便可重新開啟您已儲存的家族樹。</li>
+              <li>如有需要，亦可把家族樹匯出為圖片或 PDF，方便列印或留存。</li>
+            </ol>
+            <h3>共享目前如何運作</h3>
+            <p>目前私人家族樹的共享，主要透過 Google Drive 進行。</p>
+            <ul>
+              <li><strong>儲存：</strong>擁有者先把主要家族樹檔案儲存在自己的 Google Drive。</li>
+              <li><strong>管理存取：</strong>在<strong>成員管理</strong>頁面中，擁有者或具備編輯權限的人可輸入受邀家族成員的 Gmail 地址。</li>
+              <li><strong>設定角色：</strong>受邀者可被設定為<strong>編輯者</strong>或<strong>檢視者</strong>。</li>
+              <li><strong>透過 Drive 共享：</strong>應用會使用 Google Drive 權限，把相關家族樹檔案共享給該 Gmail 帳號。</li>
+              <li><strong>加入：</strong>受邀家族成員登入後，即可開啟共享的家族樹。</li>
+              <li><strong>協作：</strong>視乎角色權限，受邀者可以檢視家族樹，或協助更新內容。</li>
+            </ul>
+            <p>簡單來說，目前應用主要有三種角色：<strong>擁有者</strong>、<strong>編輯者</strong>及<strong>檢視者</strong>。擁有者與編輯者可在<strong>成員管理</strong>頁面處理共享，而受邀者則以 Gmail 地址加入並取得相應權限。</p>
+            <h3>如果您是受邀家族成員</h3>
+            <ol style="margin-left:20px; margin-bottom:16px; color:var(--ink2); line-height:1.6;">
+              <li>開啟應用。您可以從邀請連結進入，或在家族樹已共享給您的情況下直接開啟應用。</li>
+              <li>點選<strong>加入</strong>，或使用應用內開啟共享檔案的流程。</li>
+              <li>使用與邀請相同的 Google 帳號（Gmail 地址）登入。</li>
+              <li>開啟共享的家族樹檔案；在目前流程中，這可能包括透過 Google Picker 選擇共享的 <code>private_tree.json</code> 檔案。</li>
+              <li>依照您獲得的權限檢視家族樹，或協助更新內容。</li>
+            </ol>
+            <h3>簡單理解</h3>
+            <ul>
+              <li><strong>擁有者</strong>登入後，把主要私人家族樹保存在自己的 Google Drive。</li>
+              <li>受邀家族成員則透過<strong>加入</strong>開啟已共享給他們的家族樹。</li>
+              <li>本應用主要面向家族內部使用，而不是公開瀏覽。</li>
+            </ul>`,
+        workflows_html: `<h2>核心流程：編輯、儲存、復原與重新載入</h2>
+            <p>本應用的設計方向，是讓主要家族樹檔案存放於 Google Drive，而不是集中保存在平台資料庫。</p>
+            <h3>1. 編輯與儲存</h3>
+            <ul>
+              <li><strong>編輯人物：</strong>您可以在家族樹頁面或成員表中開啟人物資料並進行編輯。</li>
+              <li><strong>畫面上的變更：</strong>當您儲存修改或新增親屬時，變更會先立即反映在應用畫面中。</li>
+              <li><strong>儲存行為：</strong>目前版本中，這些變更通常會盡快經由應用的儲存流程寫回，而不一定依賴另一個分離的最終提交按鈕。</li>
+              <li><strong>Drive 儲存：</strong>當 Google Drive 存取已就緒時，應用會嘗試把更新後的家族樹檔案寫回 Google Drive。若 Google API 或權杖尚未就緒，應用亦可能先保留本地狀態，再於稍後同步。</li>
+            </ul>
+            <h3>2. 復原與重做</h3>
+            <ul>
+              <li>頁面頂部設有<strong>復原</strong>與<strong>重做</strong>按鈕。</li>
+              <li>這些按鈕是目前工作階段內回到較早修改狀態或重新套用修改的主要工具。</li>
+            </ul>
+            <h3>3. 從 Drive 重新載入</h3>
+            <ul>
+              <li>當您開啟的是 Drive-backed 家族樹時，頂部亦會顯示<strong>從 Drive 重新載入</strong>。</li>
+              <li>此按鈕會重新讀取目前儲存在 Google Drive 的家族樹檔案。</li>
+              <li>如果另一位協作者已更新內容，這個按鈕可用來取得最新 Drive 版本。</li>
+              <li>它亦可協助您放棄未同步的本地變更，並以 Drive 中已儲存的版本為準。</li>
+            </ul>`,
+        notes_html: `<h2>注意事項</h2>
+            <ul>
+              <li>本計劃由獨立維護者持續更新，部分功能仍在調整中。</li>
+              <li>某些功能或儲存行為目前仍可能處於過渡狀態。</li>
+              <li>當您建立或分享家族樹副本時，請自行留意該副本如何被保存、共享或轉發。</li>
+              <li>處理仍在世親屬的個人資料、照片或故事時，請特別審慎。</li>
+              <li>私人家族樹主要面向擁有者與受邀家族成員使用。</li>
+            </ul>
+            <h3 style="margin-top:32px;">開發說明</h3>
+            <p>此程式碼庫為公開狀態，方便檢視與審閱程式碼。整個計劃的方向，是主要依靠擁有者自己的 Google Drive 儲存私人家族樹，以減少平台集中保存私人家族資料。</p>
+            <p>如需在本地執行應用，請不要直接從磁碟開啟 HTML 檔案，而應改用本地網頁伺服器。您亦需要自行建立 Google Cloud 專案、產生 OAuth 憑證、填入程式碼，並在 Google Cloud Console 中設定對應本地網址的允許 JavaScript origins。</p>
+            <h3 style="margin-top:32px;">目前狀態</h3>
+            <p>此程式碼庫目前仍在持續測試與調整中。</p>`,
+        footer_brand: "家族記憶",
+        footer_desc: "致力於用現代技術保存傳統親情與家族歷史。",
+        footer_links_h: "連結",
+        footer_legal_h: "法務與政策",
+        footer_contact_h: "聯絡",
+        footer_home: "首頁",
+        footer_privacy: "私隱政策",
+        footer_terms: "使用條款",
+        footer_disclaimer: "免責聲明",
+        footer_support: "支援與聯絡",
+        footer_app: "開啟應用",
+        footer_copy: "© 2026 Family Heritage Project. Let love pass on."
+      },
+      en: {
+        nav_brand: "Family Heritage",
+        nav_home: "Home",
+        nav_guide: "User Guide",
+        nav_app: "Open App",
+        hero_title: "User Guide",
+        hero_subtitle: "A guided overview of how to build, preserve, share, and continue your private family tree.",
+        toc_purpose: "Project Direction",
+        toc_features: "Main Pages",
+        toc_how: "Getting Started",
+        toc_workflows: "Core Flow",
+        toc_notes: "Notes",
+        purpose_html: `<h2>Project Purpose & Architecture</h2>
+            <p>This project is designed to help families organize member relationships, preserve family memory, and maintain a private family tree in a way that remains primarily under the owner's control.</p>
+            <p><strong>The intended direction is:</strong></p>
+            <ul>
+              <li>privacy conscious</li>
+              <li>family / internal use first</li>
+              <li>free to use in principle</li>
+              <li>no central backend for private tree storage</li>
+              <li>owner-controlled private storage</li>
+              <li>the owner’s private tree is intended to be stored in the owner’s own Google Drive</li>
+              <li>invited family members may access the tree through approved sharing flows</li>
+              <li>export to image / PDF is supported</li>
+              <li>private family-tree content should mainly be for the owner and invited family members</li>
+            </ul>
+            <h3>Current Architecture & Storage Model</h3>
+            <p>This project is intentionally designed to avoid using a central backend for storing private family-tree records.</p>
+            <ul>
+              <li>the owner’s private family tree is stored in the owner’s Google Drive.</li>
+              <li>browser local storage may still be used for limited cached or transitional state.</li>
+              <li>Google services such as sign-in and Drive access are used for the core private-tree workflow.</li>
+            </ul>
+            <p>This helps reduce centralized custody of sensitive family data and lowers ongoing backend and security maintenance burden.</p>`,
+        features_html: `<h2>Main Pages and Features</h2>
+            <p>The current app is organized around these main sections:</p>
+            <ul>
+              <li><strong>Family Tree:</strong> The main visual view of the tree. You can browse family members and relationships, click a person to view details, edit information if you have permission, and export the tree as PNG or PDF.</li>
+              <li><strong>Community:</strong> A place to add and organize external links that help family members stay connected.</li>
+              <li><strong>Member Table:</strong> A spreadsheet-style view of all family members, useful for searching, sorting, quick edits, and exporting family data to CSV or Excel.</li>
+              <li><strong>Members Admin:</strong> The member-management area for the tree owner, where invited relatives can be added by Gmail address and assigned viewing or editing roles.</li>
+            </ul>`,
+        how_html: `<h2>Getting Started</h2>
+            <p>This app currently has two main ways to begin:</p>
+            <ul>
+              <li><strong>Sign In</strong> — For the owner who creates and manages the primary family tree.</li>
+              <li><strong>Join</strong> — For family members who were invited to view or contribute to an existing tree.</li>
+            </ul>
+            <h3>If you are the owner</h3>
+            <ol style="margin-left:20px; margin-bottom:16px; color:var(--ink2); line-height:1.6;">
+              <li>Open the app and click <strong>Sign in</strong> using your Google account.</li>
+              <li>Create a new family tree or reopen your previously saved tree.</li>
+              <li>Add family members, relationships, and basic biographical details.</li>
+              <li>Click <strong>Save</strong> to sync the tree data directly to your personal Google Drive.</li>
+              <li>Return at any time, sign in again, and reopen your saved tree.</li>
+              <li>If needed, export the family tree as an image or PDF for printing or record-keeping.</li>
+            </ol>
+            <h3>How sharing works</h3>
+            <p>This app currently uses Google Drive as the main sharing path for private family-tree access.</p>
+            <ul>
+              <li><strong>Save:</strong> The owner saves the main family-tree file to their own Google Drive.</li>
+              <li><strong>Manage access:</strong> In the Members Admin page, the owner or an approved editor can enter the invited family member’s Gmail address.</li>
+              <li><strong>Assign roles:</strong> The invited person can be assigned as Editor or Viewer.</li>
+              <li><strong>Share through Drive:</strong> The app uses Google Drive permissions to share the relevant tree file with that Gmail account.</li>
+              <li><strong>Join:</strong> The invited family member signs in and opens the shared tree.</li>
+              <li><strong>Collaborate:</strong> Depending on the assigned role, the invited person can either view the tree or help edit it.</li>
+            </ul>
+            <p>In simple terms, the current app has three roles: <strong>Owner</strong>, <strong>Editor</strong>, and <strong>Viewer</strong>. Owner and Editor can manage sharing in Members Admin, while invited people are added by Gmail address and assigned as Editor or Viewer.</p>
+            <h3>If you were invited by a family member</h3>
+            <ol style="margin-left:20px; margin-bottom:16px; color:var(--ink2); line-height:1.6;">
+              <li>Open the app. You may do this from an invitation link, or by opening the app directly if the tree has already been shared with your account.</li>
+              <li>Click <strong>Join</strong>, or use the shared-file opening flow in the app.</li>
+              <li>Sign in with the exact Google account that was invited.</li>
+              <li>Open the shared family-tree file. In the current flow, this may involve selecting the shared <code>private_tree.json</code> file through the Google Picker.</li>
+              <li>View the tree or help update it according to the access level you were given.</li>
+            </ol>
+            <h3>In simple terms</h3>
+            <ul>
+              <li>The <strong>owner</strong> signs in and keeps the main private family tree in their own Google Drive.</li>
+              <li>Invited family members use <strong>Join</strong> to open a tree that has already been shared with them.</li>
+              <li>The app is mainly meant for family and internal use, not broad public sharing.</li>
+            </ul>`,
+        workflows_html: `<h2>Core Workflows: Edit, Save, Undo, and Reload</h2>
+            <p>This app is designed so that the main family-tree file is stored in Google Drive rather than in a central project database.</p>
+            <h3>1. Editing and saving</h3>
+            <ul>
+              <li><strong>Edit a person:</strong> In the Family Tree view or Member Table view, open a person’s details and edit their information.</li>
+              <li><strong>Changes on screen:</strong> When you save an edit or add a new relative, the change is immediately applied in the app.</li>
+              <li><strong>Save behavior:</strong> In the current app, these changes are usually pushed through the save flow quickly, rather than waiting for a separate final save button.</li>
+              <li><strong>Drive storage:</strong> When Google Drive access is available, the app attempts to save the updated tree file to Google Drive. If Google APIs or tokens are not ready, the app can still keep the updated state locally first and sync later.</li>
+            </ul>
+            <h3>2. Undo and redo</h3>
+            <ul>
+              <li>The top header includes <strong>Undo</strong> and <strong>Redo</strong> buttons.</li>
+              <li>These are the main tools for stepping backward or forward through recent edits in the current session.</li>
+            </ul>
+            <h3>3. Reload from Drive</h3>
+            <ul>
+              <li>The top header also includes <strong>Reload from Drive</strong> when a Drive-backed tree is open.</li>
+              <li>This button reloads the current tree file from Google Drive.</li>
+              <li>It is useful when you want to refresh the tree from the saved Drive version, including after another collaborator has made changes.</li>
+              <li>It can also help you discard unsaved local state by reloading the stored Drive version of the tree.</li>
+            </ul>`,
+        notes_html: `<h2>Important Notes</h2>
+            <ul>
+              <li>This is an independently maintained project and some parts are still evolving.</li>
+              <li>Some features or storage behavior may remain transitional while the project is being refined.</li>
+              <li>When you create or share a copy of the family tree, please use care and take responsibility for how that copy is stored, shared, or forwarded.</li>
+              <li>Please take extra care when handling personal data, photos, or stories relating to living relatives.</li>
+              <li>Private family-tree use is mainly intended for the owner and invited family members.</li>
+            </ul>
+            <h3 style="margin-top:32px;">Development Note</h3>
+            <p>This repository is public so the code can be reviewed and inspected. The project is designed to reduce centralized storage of private family-tree data by relying mainly on the owner’s own Google Drive for private tree storage.</p>
+            <p>To run the app locally, do not open the HTML files directly from disk. Serve the project from a local web server instead. You will also need to create your own Google Cloud project, generate your own OAuth credentials, add them to the code, and configure the allowed JavaScript origins in Google Cloud Console so they match your local server address.</p>
+            <h3 style="margin-top:32px;">Status</h3>
+            <p>This repository is currently in active testing and refinement.</p>`,
+        footer_brand: "Family Heritage",
+        footer_desc: "Dedicated to preserving traditional family bonds and history through modern technology.",
+        footer_links_h: "Links",
+        footer_legal_h: "Legal and Policy",
+        footer_contact_h: "Contact",
+        footer_home: "Home",
+        footer_privacy: "Privacy Policy",
+        footer_terms: "Terms of Use",
+        footer_disclaimer: "Disclaimer",
+        footer_support: "Support and Contact",
+        footer_app: "Open App",
+        footer_copy: "© 2026 Family Heritage Project. Let love pass on."
+      }
+    };
+
+    function setLang(lang) {
+      localStorage.setItem(GUIDE_LANG_KEY, lang);
+      applyLang(lang);
+    }
+
+    function applyLang(lang) {
+      document.documentElement.lang = lang;
+      document.getElementById('lang-zh-btn').classList.toggle('active', lang === 'zh');
+      document.getElementById('lang-en-btn').classList.toggle('active', lang === 'en');
+      
+      const strings = I18N[lang] || I18N['zh'];
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (strings[key]) el.innerHTML = strings[key];
+      });
+      document.title = lang === 'zh' ? '使用教學 / User Guide — 家族記憶' : 'User Guide — Family Heritage';
+    }
+
+    const savedLang = localStorage.getItem(GUIDE_LANG_KEY) || 'zh';
+    applyLang(savedLang);
+  </script>
+</body>
+</html>
