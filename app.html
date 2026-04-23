@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta name="robots" content="noindex,nofollow">
-<title>家族記憶 · Family Heritage</title>
+<title>家族樹 · Family Tree</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500;600;700&family=Noto+Serif:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="https://apis.google.com/js/api.js" async defer></script>
@@ -812,7 +812,7 @@ body.header-compact .zpct{
 <div class="top-bar"></div>
 <header>
   <div class="site-brand">
-    <a href="index.html" class="site-title" id="site-title" style="text-decoration:none">家族記憶</a>
+    <a href="index.html" class="site-title" id="site-title" style="text-decoration:none">家族樹</a>
     <button class="site-edit-btn" id="site-settings-btn" onclick="openSiteSettings()">✎</button>
   </div>
   <div class="ver-badge" id="ver-badge">v1.3.0</div>
@@ -893,7 +893,7 @@ body.header-compact .zpct{
     <!-- Welcome Dashboard (shown if no tree loaded OR authorization required) -->
     <div id="welcome-dashboard" style="display:none;position:absolute;inset:0;background:var(--p);z-index:20;flex-direction:column;align-items:center;justify-content:center;padding:40px;text-align:center">
       <div style="font-size:48px;margin-bottom:20px" id="wd-icon">🌳</div>
-      <h2 id="wd-ti" style="margin-bottom:12px;font-family:var(--serif);font-size:24px;color:var(--ink)">歡迎來到家族記憶</h2>
+      <h2 id="wd-ti" style="margin-bottom:12px;font-family:var(--serif);font-size:24px;color:var(--ink)">歡迎來到家族樹</h2>
       <p id="wd-sub" style="max-width:400px;line-height:1.6;color:var(--ink2);margin-bottom:32px">您可以開始建立自己的家族樹，或是加入親友分享給您的現有家族樹。</p>
       
       <!-- Normal welcome buttons -->
@@ -1270,8 +1270,8 @@ body.header-compact .zpct{
   <div class="modal m-sm">
     <div class="mhdr"><div class="mttl" id="site-settings-ttl">家族名稱</div><button class="mclose" onclick="closeOv('ov-site')">×</button></div>
     <div class="mbody">
-      <div class="fg"><label class="fl" id="site-name-zh-lbl">中文家族名稱</label><input class="fi" type="text" id="site-name-zh" placeholder="家族記憶"></div>
-      <div class="fg"><label class="fl" id="site-name-en-lbl">英文家族名稱</label><input class="fi" type="text" id="site-name-en" placeholder="Family Heritage"></div>
+      <div class="fg"><label class="fl" id="site-name-zh-lbl">中文家族名稱</label><input class="fi" type="text" id="site-name-zh" placeholder="家族樹"></div>
+      <div class="fg"><label class="fl" id="site-name-en-lbl">英文家族名稱</label><input class="fi" type="text" id="site-name-en" placeholder="Family Tree"></div>
       <button class="fsub" id="site-settings-save" onclick="saveSiteSettings()">儲存</button>
     </div>
   </div>
@@ -1341,7 +1341,7 @@ const FONT_SIZE_STORAGE_KEY='family-font-size-mode';
 const APP_STATE_STORAGE_KEY='family-heritage-app-state';
 const LEGAL_ACK_KEY = 'family-heritage-legal-ack-v1';
 let FONT_SIZE_MODE='normal';
-const SITE_META={zh:'家族記憶',en:'Family Heritage'};
+const SITE_META={zh:'家族樹',en:'Family Tree'};
 
 // Runtime User & Tree Context
 // Add ?proto to the URL (e.g. app.html?proto) to keep prototype/local-storage mode
@@ -1620,7 +1620,7 @@ let COMM=[
 
 let TREE_META={
   treeId: "MOCK_CLOUD_TREE",
-  familyName: {zh:'家族記憶',en:'Family Heritage'},
+  familyName: {zh:'家族樹',en:'Family Tree'},
   publicFileId: "",
   publicLinkActive: false,
   driveFolderId: "",
@@ -3699,7 +3699,7 @@ function render(){
      } else if (noTree) {
        // Normal welcome mode: no tree yet
        setTxt('wd-icon', '\ud83c\udf33');
-       setTxt('wd-ti', zh?'\u6b61\u8fce\u4f86\u5230\u5bb6\u65cf\u8a18\u61b6':'Welcome to Family Heritage');
+       setTxt('wd-ti', zh?'\u6b61\u8fce\u4f86\u5230\u5bb6\u65cf\u6a39':'Welcome to Family Tree');
        setTxt('wd-sub', zh?'\u60a8\u53ef\u4ee5\u958b\u59cb\u5efa\u7acb\u81ea\u5df1\u7684\u5bb6\u65cf\u6a39\uff0c\u6216\u662f\u52a0\u5165\u89aa\u53cb\u5206\u4eab\u7d66\u60a8\u7684\u73fe\u6709\u5bb6\u65cf\u6a39\u3002':'Start your own family tree project or join one shared by your family.');
        if (normalActions) normalActions.style.display = 'flex';
        if (authActions) authActions.style.display = 'none';
@@ -4642,7 +4642,7 @@ let curPage='tree';
 function applyStaticLang(){
   const zh=LANG==='zh';
   document.documentElement.lang=LANG;
-  document.title = zh ? '家族記憶' : 'Family Heritage';
+  document.title = zh ? '家族樹' : 'Family Tree';
   document.getElementById('ver-badge').textContent=SITE_VERSION;
   renderSiteTitle();
   updatePeopleCount();
@@ -4831,8 +4831,8 @@ function applyStaticLang(){
   setTxt('site-settings-ttl', zh ? '修改名稱' : 'Edit Name');
   setTxt('site-name-zh-lbl', zh ? '中文名稱' : 'Chinese Name');
   setTxt('site-name-en-lbl', zh ? '英文名稱' : 'English Name');
-  const snzh = document.getElementById('site-name-zh'); if(snzh) snzh.placeholder = zh ? '家族記憶' : 'Family Tree';
-  const snen = document.getElementById('site-name-en'); if(snen) snen.placeholder = 'Family Heritage';
+  const snzh = document.getElementById('site-name-zh'); if(snzh) snzh.placeholder = zh ? '家族樹' : 'Family Tree';
+  const snen = document.getElementById('site-name-en'); if(snen) snen.placeholder = 'Family Tree';
   setTxt('site-settings-save', zh ? '儲存' : 'Save');
 
   // Modals - Add Person

@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>使用教學 / User Guide — 家族記憶</title>
-  <meta name="description" content="家族記憶的使用教學，了解如何管理、分享與編輯您的私人家族樹。">
+  <title>使用教學 / User Guide — 家族樹</title>
+  <meta name="description" content="家族樹的使用教學，了解如何管理、分享與編輯您的私人家族樹。">
   <link rel="canonical" href="https://your-domain.com/guide.html">
 
   <!-- Open Graph -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://your-domain.com/guide.html">
-  <meta property="og:title" content="使用教學 / User Guide — 家族記憶">
-  <meta property="og:description" content="家族記憶的使用教學，了解如何管理、分享與編輯您的私人家族樹。">
+  <meta property="og:title" content="使用教學 / User Guide — 家族樹">
+  <meta property="og:description" content="家族樹的使用教學，了解如何管理、分享與編輯您的私人家族樹。">
   <meta property="og:locale" content="zh_HK">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -120,7 +120,7 @@
 
   <header class="site-header">
     <div class="container nav-wrap">
-      <a href="index.html" class="logo" data-i18n="nav_brand">家族記憶</a>
+      <a href="index.html" class="logo" data-i18n="nav_brand">家族樹</a>
       <nav class="nav-links">
         <a href="index.html" class="nav-link" data-i18n="nav_home">首頁</a>
         <a href="guide.html" class="nav-link active" data-i18n="nav_guide">使用教學</a>
@@ -156,7 +156,7 @@
           <!-- Purpose & Architecture -->
           <div class="card trust-card" id="purpose" data-i18n="purpose_html">
             <h2>計劃方向與架構</h2>
-            <p>這個計劃的目的，是幫助家庭整理成員關係、保存家族記憶，並以較由擁有者掌握的方式維護私人家族樹。</p>
+            <p>這個計劃的目的，是幫助家庭整理成員關係、保存家族回憶，並以較由擁有者掌握的方式維護私人家族樹。</p>
             <p><strong>目前的主要方向：</strong></p>
             <ul>
               <li>以私隱與審慎使用為前提</li>
@@ -296,7 +296,7 @@
     <div class="container">
       <div class="footer-grid">
         <div class="footer-brand">
-          <span class="logo" data-i18n="footer_brand">家族記憶</span>
+          <span class="logo" data-i18n="footer_brand">家族樹</span>
           <p class="footer-desc" data-i18n="footer_desc">致力於用現代技術保存傳統親情與家族歷史。</p>
         </div>
         <div class="footer-col">
@@ -323,7 +323,7 @@
         </div>
       </div>
       <div class="footer-bottom">
-        <p data-i18n="footer_copy">© 2026 Family Heritage Project. Let love pass on.</p>
+        <p data-i18n="footer_copy">© 2026 Family Tree Project · P. All rights reserved.</p>
       </div>
     </div>
   </footer>
@@ -333,7 +333,7 @@
     const GUIDE_LANG_KEY = 'family-heritage-guide-lang';
     const I18N = {
       zh: {
-        nav_brand: "家族記憶",
+        nav_brand: "家族樹",
         nav_home: "首頁",
         nav_guide: "使用教學",
         nav_app: "開啟應用",
@@ -345,7 +345,7 @@
         toc_workflows: "核心流程",
         toc_notes: "注意事項",
         purpose_html: `<h2>計劃方向與架構</h2>
-            <p>這個計劃的目的，是幫助家庭整理成員關係、保存家族記憶，並以較由擁有者自行掌握的方式維護私人家族樹。</p>
+            <p>這個計劃的目的，是幫助家庭整理成員關係、保存家族回憶，並以較由擁有者自行掌握的方式維護私人家族樹。</p>
             <p><strong>目前的主要方向：</strong></p>
             <ul>
               <li>以私隱與審慎使用為前提</li>
@@ -448,7 +448,7 @@
             <p>如需在本地執行應用，請不要直接從磁碟開啟 HTML 檔案，而應改用本地網頁伺服器。您亦需要自行建立 Google Cloud 專案、產生 OAuth 憑證、填入程式碼，並在 Google Cloud Console 中設定對應本地網址的允許 JavaScript origins。</p>
             <h3 style="margin-top:32px;">目前狀態</h3>
             <p>此程式碼庫目前仍在持續測試與調整中。</p>`,
-        footer_brand: "家族記憶",
+        footer_brand: "家族樹",
         footer_desc: "致力於用現代技術保存傳統親情與家族歷史。",
         footer_links_h: "連結",
         footer_legal_h: "法務與政策",
@@ -459,10 +459,10 @@
         footer_disclaimer: "免責聲明",
         footer_support: "支援與聯絡",
         footer_app: "開啟應用",
-        footer_copy: "© 2026 Family Heritage Project. Let love pass on."
+        footer_copy: "© 2026 Family Tree Project · P. All rights reserved."
       },
       en: {
-        nav_brand: "Family Heritage",
+        nav_brand: "Family Tree",
         nav_home: "Home",
         nav_guide: "User Guide",
         nav_app: "Open App",
@@ -577,7 +577,7 @@
             <p>To run the app locally, do not open the HTML files directly from disk. Serve the project from a local web server instead. You will also need to create your own Google Cloud project, generate your own OAuth credentials, add them to the code, and configure the allowed JavaScript origins in Google Cloud Console so they match your local server address.</p>
             <h3 style="margin-top:32px;">Status</h3>
             <p>This repository is currently in active testing and refinement.</p>`,
-        footer_brand: "Family Heritage",
+        footer_brand: "Family Tree",
         footer_desc: "Dedicated to preserving traditional family bonds and history through modern technology.",
         footer_links_h: "Links",
         footer_legal_h: "Legal and Policy",
@@ -588,7 +588,7 @@
         footer_disclaimer: "Disclaimer",
         footer_support: "Support and Contact",
         footer_app: "Open App",
-        footer_copy: "© 2026 Family Heritage Project. Let love pass on."
+        footer_copy: "© 2026 Family Tree Project · P. All rights reserved."
       }
     };
 
@@ -607,7 +607,7 @@
         const key = el.getAttribute('data-i18n');
         if (strings[key]) el.innerHTML = strings[key];
       });
-      document.title = lang === 'zh' ? '使用教學 / User Guide — 家族記憶' : 'User Guide — Family Heritage';
+      document.title = lang === 'zh' ? '使用教學 / User Guide — 家族樹' : 'User Guide — Family Tree';
     }
 
     const savedLang = localStorage.getItem(GUIDE_LANG_KEY) || 'zh';
