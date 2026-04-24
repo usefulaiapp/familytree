@@ -805,6 +805,80 @@ body.header-compact .zpct{
   border-radius:50%;animation:_dsb-spin .75s linear infinite;
 }
 @keyframes _dsb-spin{to{transform:rotate(360deg)}}
+
+/* ── Date Picker ── */
+.dp-wrap{position:relative;display:flex;align-items:center;gap:4px;width:100%;}
+.dp-wrap .rp-ef,.dp-wrap .fi,.dp-wrap .pt-add-inp,.dp-wrap .pt-cell-inp{flex:1;min-width:0;}
+.dp-trigger{
+  flex-shrink:0;width:32px;height:32px;border-radius:8px;border:1px solid var(--bd,#e4ddd0);
+  background:var(--p2,#f5f0e6);color:var(--ink2,#6b5e50);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;font-size:16px;
+  transition:all .15s;
+}
+.dp-trigger:hover{background:var(--p3,#ede5d4);border-color:var(--gold2,#c9a96e);color:var(--ink,#2c2420);}
+.dp-panel{
+  position:fixed;top:0;left:0;z-index:9999;
+  width:min(280px,calc(100vw - 16px));background:#fff;border-radius:14px;
+  border:1px solid var(--bd,#e4ddd0);
+  box-shadow:0 12px 36px rgba(0,0,0,.12),0 2px 8px rgba(0,0,0,.06);
+  padding:12px;font-size:13px;color:var(--ink,#2c2420);
+  animation:dpFadeIn .15s ease;
+}
+@keyframes dpFadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.dp-panel.dp-above{animation-name:dpFadeInUp;}
+@keyframes dpFadeInUp{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+
+/* Mode toggle */
+.dp-mode{display:flex;border-radius:8px;overflow:hidden;border:1px solid var(--bd,#e4ddd0);margin-bottom:10px;}
+.dp-mode button{flex:1;padding:6px 0;font-size:12px;font-weight:600;border:none;cursor:pointer;
+  background:var(--p2,#f5f0e6);color:var(--ink3,#97897a);transition:all .15s;}
+.dp-mode button.on{background:var(--ink,#2c2420);color:var(--p,#fbfaf5);}
+
+/* Calendar header */
+.dp-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.dp-hdr span{font-weight:700;font-size:13px;flex:1;text-align:center;}
+.dp-nav{width:28px;height:28px;border-radius:6px;border:none;cursor:pointer;
+  background:transparent;color:var(--ink2,#6b5e50);font-size:14px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.dp-nav:hover{background:var(--p2,#f5f0e6);}
+
+/* Day grid */
+.dp-dow{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;margin-bottom:4px;}
+.dp-dow span{font-size:10px;font-weight:700;color:var(--ink3,#97897a);text-transform:uppercase;padding:2px 0;}
+.dp-days{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
+.dp-day{
+  width:100%;aspect-ratio:1;border-radius:8px;border:none;cursor:pointer;
+  background:transparent;color:var(--ink,#2c2420);font-size:12px;font-weight:500;
+  display:flex;align-items:center;justify-content:center;transition:all .12s;
+}
+.dp-day:hover{background:var(--p2,#f5f0e6);}
+.dp-day.empty{pointer-events:none;}
+.dp-day.today{border:1.5px solid var(--gold,#b8923a);font-weight:700;}
+.dp-day.sel{background:var(--ink,#2c2420);color:#fff;font-weight:700;}
+
+/* Year grid */
+.dp-yrs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;}
+.dp-yr{
+  padding:10px 0;border-radius:8px;border:none;cursor:pointer;
+  background:transparent;color:var(--ink,#2c2420);font-size:13px;font-weight:500;
+  transition:all .12s;text-align:center;
+}
+.dp-yr:hover{background:var(--p2,#f5f0e6);}
+.dp-yr.today{border:1.5px solid var(--gold,#b8923a);font-weight:700;}
+.dp-yr.sel{background:var(--ink,#2c2420);color:#fff;font-weight:700;}
+
+/* Clear btn */
+.dp-clr{
+  display:block;width:100%;margin-top:8px;padding:6px 0;border-radius:8px;border:1px solid var(--bd,#e4ddd0);
+  background:var(--p2,#f5f0e6);color:var(--ink3,#97897a);font-size:12px;font-weight:600;
+  cursor:pointer;transition:all .15s;text-align:center;
+}
+.dp-clr:hover{background:#fce8e8;color:#c05050;border-color:#e0b0b0;}
+
+/* Responsive */
+@media(max-width:480px){
+  .dp-panel{width:min(260px,calc(100vw - 16px));padding:10px;}
+}
 </style>
 </head>
 <body>
@@ -992,7 +1066,7 @@ body.header-compact .zpct{
           </div>
           <div class="pt-add-col">
             <label class="pt-add-lbl" id="pt-add-birth-lbl">出生年</label>
-            <input class="pt-add-inp narrow" id="pt-add-birth" type="text" placeholder="YYYY 或 YYYY-MM-DD" autocomplete="off" spellcheck="false">
+            <input class="pt-add-inp" id="pt-add-birth" type="text" placeholder="YYYY 或 YYYY-MM-DD" autocomplete="off" spellcheck="false">
           </div>
           <div class="pt-add-col" style="justify-content:flex-end">
             <button class="pt-open-btn gold-pri" id="pt-add-submit" onclick="ptAddPerson()">✓ 新增</button>
@@ -3897,6 +3971,312 @@ function buildPanel(pid){
   else buildEditPanel(pid);
 }
 
+/* ── DatePicker: Flexible Date Picker with Year-Only mode ── */
+const _dpInstances = [];
+const DP_YEAR_MIN = 1880;
+const DP_YEAR_MAX = new Date().getFullYear() + 5;
+
+class DatePicker {
+  constructor(inputEl, opts = {}) {
+    this.input = inputEl;
+    this.onSelect = opts.onSelect || null; // callback(value)
+    this.mode = 'date'; // 'date' | 'year'
+    this.open = false;
+
+    const now = new Date();
+    this.viewMonth = now.getMonth();
+    this.viewYear = now.getFullYear();
+    this.yearPageStart = Math.floor(this.viewYear / 20) * 20;
+
+    // Parse existing value
+    this._parseInput();
+
+    // Create trigger button
+    this.trigger = document.createElement('button');
+    this.trigger.type = 'button';
+    this.trigger.className = 'dp-trigger';
+    this.trigger.innerHTML = '📅';
+    this.trigger.title = LANG === 'zh' ? '開啟日期選擇器' : 'Open date picker';
+    this.trigger.addEventListener('click', (e) => { e.stopPropagation(); this.toggle(); });
+
+    // Wrap: put input + trigger inside a .dp-wrap
+    this.wrap = document.createElement('div');
+    this.wrap.className = 'dp-wrap';
+    inputEl.parentNode.insertBefore(this.wrap, inputEl);
+    this.wrap.appendChild(inputEl);
+    this.wrap.appendChild(this.trigger);
+
+    // Create panel
+    this.panel = document.createElement('div');
+    this.panel.className = 'dp-panel';
+    this.panel.style.display = 'none';
+    this.panel.addEventListener('click', e => e.stopPropagation());
+    this.wrap.appendChild(this.panel);
+
+    // Global close
+    this._onDocClick = () => this.close();
+    this._onEsc = (e) => { if (e.key === 'Escape') this.close(); };
+
+    _dpInstances.push(this);
+  }
+
+  _parseInput() {
+    const val = (this.input.value || '').trim();
+    const fullMatch = val.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    const yearMatch = val.match(/^(\d{4})$/);
+    if (fullMatch) {
+      this.selYear = parseInt(fullMatch[1]);
+      this.selMonth = parseInt(fullMatch[2]) - 1;
+      this.selDay = parseInt(fullMatch[3]);
+      this.viewYear = this.selYear;
+      this.viewMonth = this.selMonth;
+      this.yearPageStart = Math.floor(this.selYear / 20) * 20;
+    } else if (yearMatch) {
+      this.selYear = parseInt(yearMatch[1]);
+      this.selMonth = null;
+      this.selDay = null;
+      this.viewYear = this.selYear;
+      this.yearPageStart = Math.floor(this.selYear / 20) * 20;
+      this.mode = 'year';
+    } else {
+      this.selYear = null; this.selMonth = null; this.selDay = null;
+    }
+  }
+
+  toggle() {
+    this.open ? this.close() : this.show();
+  }
+
+  show() {
+    this._parseInput();
+    this.open = true;
+    this.panel.style.display = '';
+    this._render();
+    this._position();
+    setTimeout(() => {
+      document.addEventListener('click', this._onDocClick);
+      document.addEventListener('keydown', this._onEsc);
+    }, 0);
+  }
+
+  close() {
+    this.open = false;
+    this.panel.style.display = 'none';
+    document.removeEventListener('click', this._onDocClick);
+    document.removeEventListener('keydown', this._onEsc);
+  }
+
+  _position() {
+    this.panel.classList.remove('dp-above');
+    const rect = this.wrap.getBoundingClientRect();
+    const panelRect = this.panel.getBoundingClientRect();
+    const margin = 8;
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const showAbove = spaceBelow < (panelRect.height + 12) && rect.top > (panelRect.height + 12);
+    if (showAbove) {
+      this.panel.classList.add('dp-above');
+    }
+    let left = rect.right - panelRect.width;
+    left = Math.max(margin, Math.min(left, window.innerWidth - panelRect.width - margin));
+    let top = showAbove ? rect.top - panelRect.height - 6 : rect.bottom + 6;
+    top = Math.max(margin, Math.min(top, window.innerHeight - panelRect.height - margin));
+    this.panel.style.left = `${left}px`;
+    this.panel.style.top = `${top}px`;
+  }
+
+  _setValue(val) {
+    this.input.value = val;
+    // Fire oninput for data-binding
+    this.input.dispatchEvent(new Event('input', { bubbles: true }));
+    if (this.onSelect) this.onSelect(val);
+  }
+
+  _render() {
+    const zh = LANG === 'zh';
+    const modeLabel = this.mode === 'date'
+      ? { dateOn: ' on', yearOn: '' }
+      : { dateOn: '', yearOn: ' on' };
+
+    let html = `<div class="dp-mode">
+      <button type="button" class="${modeLabel.dateOn}" data-dp-mode="date">${zh ? '📅 完整日期' : '📅 Full Date'}</button>
+      <button type="button" class="${modeLabel.yearOn}" data-dp-mode="year">${zh ? '🗓 僅年份' : '🗓 Year Only'}</button>
+    </div>`;
+
+    if (this.mode === 'date') {
+      html += this._renderCalendar(zh);
+    } else {
+      html += this._renderYearGrid(zh);
+    }
+
+    html += `<button class="dp-clr" data-dp-action="clear">${zh ? '清除' : 'Clear'}</button>`;
+    this.panel.innerHTML = html;
+
+    // Wire mode buttons
+    this.panel.querySelectorAll('[data-dp-mode]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.mode = btn.dataset.dpMode;
+        this._render();
+        this._position();
+      });
+    });
+
+    // Wire clear
+    this.panel.querySelector('[data-dp-action="clear"]').addEventListener('click', (e) => {
+      e.stopPropagation();
+      this._setValue('');
+      this.selYear = null; this.selMonth = null; this.selDay = null;
+      this.close();
+    });
+
+    // Wire nav
+    this.panel.querySelectorAll('[data-dp-nav]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const dir = parseInt(btn.dataset.dpNav);
+        if (this.mode === 'date') {
+          this.viewMonth += dir;
+          if (this.viewMonth < 0) { this.viewMonth = 11; this.viewYear--; }
+          if (this.viewMonth > 11) { this.viewMonth = 0; this.viewYear++; }
+        } else {
+          this.yearPageStart += dir * 20;
+        }
+        this._render();
+        this._position();
+      });
+    });
+
+    // Wire day clicks
+    this.panel.querySelectorAll('[data-dp-day]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const d = parseInt(btn.dataset.dpDay);
+        this.selYear = this.viewYear;
+        this.selMonth = this.viewMonth;
+        this.selDay = d;
+        const mm = String(this.selMonth + 1).padStart(2, '0');
+        const dd = String(d).padStart(2, '0');
+        this._setValue(`${this.selYear}-${mm}-${dd}`);
+        this.close();
+      });
+    });
+
+    // Wire year clicks
+    this.panel.querySelectorAll('[data-dp-yr]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const y = parseInt(btn.dataset.dpYr);
+        this.selYear = y;
+        this.selMonth = null;
+        this.selDay = null;
+        this._setValue(String(y));
+        this.close();
+      });
+    });
+  }
+
+  _renderCalendar(zh) {
+    const months = zh
+      ? ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月']
+      : ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const dows = zh
+      ? ['日','一','二','三','四','五','六']
+      : ['Su','Mo','Tu','We','Th','Fr','Sa'];
+    const now = new Date();
+    const todayY = now.getFullYear(), todayM = now.getMonth(), todayD = now.getDate();
+    const firstDay = new Date(this.viewYear, this.viewMonth, 1).getDay();
+    const daysInMonth = new Date(this.viewYear, this.viewMonth + 1, 0).getDate();
+
+    let html = `<div class="dp-hdr">
+      <button class="dp-nav" data-dp-nav="-1">◂</button>
+      <span>${months[this.viewMonth]} ${this.viewYear}</span>
+      <button class="dp-nav" data-dp-nav="1">▸</button>
+    </div>`;
+
+    html += '<div class="dp-dow">';
+    dows.forEach(d => html += `<span>${d}</span>`);
+    html += '</div>';
+
+    html += '<div class="dp-days">';
+    for (let i = 0; i < firstDay; i++) html += '<button class="dp-day empty"></button>';
+    for (let d = 1; d <= daysInMonth; d++) {
+      const isToday = d === todayD && this.viewMonth === todayM && this.viewYear === todayY;
+      const isSel = d === this.selDay && this.viewMonth === this.selMonth && this.viewYear === this.selYear;
+      const cls = 'dp-day' + (isToday ? ' today' : '') + (isSel ? ' sel' : '');
+      html += `<button class="${cls}" data-dp-day="${d}">${d}</button>`;
+    }
+    html += '</div>';
+    return html;
+  }
+
+  _renderYearGrid(zh) {
+    const now = new Date();
+    const todayY = now.getFullYear();
+    const start = this.yearPageStart;
+    const end = start + 19;
+
+    let html = `<div class="dp-hdr">
+      <button class="dp-nav" data-dp-nav="-1">◂</button>
+      <span>${start} – ${end}</span>
+      <button class="dp-nav" data-dp-nav="1">▸</button>
+    </div>`;
+
+    html += '<div class="dp-yrs">';
+    for (let y = start; y <= end; y++) {
+      if (y < DP_YEAR_MIN || y > DP_YEAR_MAX) {
+        html += `<button class="dp-yr" style="visibility:hidden">${y}</button>`;
+        continue;
+      }
+      const isToday = y === todayY;
+      const isSel = y === this.selYear && this.selMonth === null;
+      const cls = 'dp-yr' + (isToday ? ' today' : '') + (isSel ? ' sel' : '');
+      html += `<button class="${cls}" data-dp-yr="${y}">${y}</button>`;
+    }
+    html += '</div>';
+    return html;
+  }
+
+  destroy() {
+    this.close();
+    // Unwrap
+    if (this.wrap && this.wrap.parentNode) {
+      this.wrap.parentNode.insertBefore(this.input, this.wrap);
+      this.wrap.remove();
+    }
+    const idx = _dpInstances.indexOf(this);
+    if (idx >= 0) _dpInstances.splice(idx, 1);
+  }
+}
+
+// Helper to attach a DatePicker to an input element
+function attachDatePicker(inputEl, opts) {
+  if (!inputEl || inputEl._datePicker) return;
+  const dp = new DatePicker(inputEl, opts);
+  inputEl._datePicker = dp;
+  return dp;
+}
+
+// Destroy all date picker instances (call before re-rendering panels)
+function destroyAllDatePickers() {
+  while (_dpInstances.length) _dpInstances[0].destroy();
+}
+
+function refreshFlexibleDatePickers() {
+  destroyAllDatePickers();
+  [
+    'a-birth',
+    'a-death',
+    'pt-add-birth',
+    'rp-edit-birth',
+    'rp-edit-death',
+    'pt-edit-birth',
+    'pt-edit-death'
+  ].forEach(id => {
+    const input = document.getElementById(id);
+    if (input) attachDatePicker(input);
+  });
+}
+
 function datePickerValue(v){
   const val=(v||'').trim();
   return /^\d{4}-\d{2}-\d{2}$/.test(val)?val:'';
@@ -4056,8 +4436,8 @@ function buildEditPanel(pid){
       <div class="rp-field"><span class="rp-k">${zh?'中文姓名':'Chinese'}</span><div class="rp-val-wrap"><input class="rp-ef" value="${p.zh}" oninput="editData.zh=this.value"></div></div>
       <div class="rp-field"><span class="rp-k">${zh?'英文姓名':'English Name'}</span><div class="rp-val-wrap"><input class="rp-ef" value="${p.en}" oninput="editData.en=this.value"></div></div>
       <div class="rp-field"><span class="rp-k">${zh?'性別':'Gender'}</span><div class="rp-val-wrap"><div class="rp-gbts"><button class="rp-gbt m${p.g==='m'?' on':''}" onclick="editData.g='m';this.classList.add('on');this.nextSibling.classList.remove('on');refreshEditPhotoUi()">${zh?'♂ 男':'♂ Male'}</button><button class="rp-gbt f${p.g==='f'?' on':''}" onclick="editData.g='f';this.classList.add('on');this.previousSibling.classList.remove('on');refreshEditPhotoUi()">${zh?'♀ 女':'♀ Female'}</button></div></div></div>
-      <div class="rp-field"><span class="rp-k">${zh?'出生日期':'Birth'}</span><div class="rp-val-wrap"><input class="rp-ef" type="text" value="${hesc(flexibleDateValue(p.birth))}" placeholder="${hesc(flexibleDatePlaceholder())}" autocomplete="off" spellcheck="false" oninput="editData.birth=this.value">${legacyDateNotice(p.birth)}</div></div>
-      <div class="rp-field"><span class="rp-k">${zh?'離世日期':'Death'}</span><div class="rp-val-wrap"><input class="rp-ef" type="text" value="${hesc(flexibleDateValue(p.death))}" placeholder="${hesc(flexibleDatePlaceholder())}" autocomplete="off" spellcheck="false" oninput="editData.death=this.value">${legacyDateNotice(p.death)}</div></div>
+      <div class="rp-field"><span class="rp-k">${zh?'出生日期':'Birth'}</span><div class="rp-val-wrap"><input class="rp-ef" id="rp-edit-birth" type="text" value="${hesc(flexibleDateValue(p.birth))}" placeholder="${hesc(flexibleDatePlaceholder())}" autocomplete="off" spellcheck="false" oninput="editData.birth=this.value">${legacyDateNotice(p.birth)}</div></div>
+      <div class="rp-field"><span class="rp-k">${zh?'離世日期':'Death'}</span><div class="rp-val-wrap"><input class="rp-ef" id="rp-edit-death" type="text" value="${hesc(flexibleDateValue(p.death))}" placeholder="${hesc(flexibleDatePlaceholder())}" autocomplete="off" spellcheck="false" oninput="editData.death=this.value">${legacyDateNotice(p.death)}</div></div>
       <div class="rp-field"><span class="rp-k">${zh?'電郵':'Email'}</span><div class="rp-val-wrap"><input class="rp-ef" type="email" value="${p.email||''}" oninput="editData.email=this.value"></div></div>
       <div class="rp-field"><span class="rp-k">${zh?'電話':'Phone'}</span><div class="rp-val-wrap"><input class="rp-ef" value="${p.phone||''}" oninput="editData.phone=this.value"></div></div>
       <div class="rp-field"><span class="rp-k">${zh?'職業(中)':'Occupation ZH'}</span><div class="rp-val-wrap"><input class="rp-ef" value="${p.oz}" oninput="editData.oz=this.value"></div></div>
@@ -4083,6 +4463,7 @@ function buildEditPanel(pid){
   document.getElementById('rp-save').classList.add('show');
   syncProfileSaveButtons();
   refreshEditPhotoUi();
+  refreshFlexibleDatePickers();
   // init pickers after DOM is ready
   setTimeout(()=>{initInlinePicker('ep-father','father',pid);initInlinePicker('ep-mother','mother',pid);initInlinePicker('ep-spouse','spouse',pid);initInlinePicker('ep-child','child',pid);},0);
 }
@@ -4181,13 +4562,15 @@ function saveEdit(){
     {label: LANG==='zh' ? '離世日期' : 'Death', value: editData.death}
   ])) return;
   const p=P[SEL];
-  p.zh=editData.zh||p.zh; p.en=editData.en||p.en;
+  p.zh=editData.zh!==undefined?editData.zh:p.zh;
+  p.en=editData.en!==undefined?editData.en:p.en;
   p.g=editData.g||p.g;
   p.birth=normalizeEditableDate(editData.birth,editData.birthOrig);
   p.death=normalizeEditableDate(editData.death,editData.deathOrig);
   p.email=editData.email!==undefined?editData.email:(p.email||'');
   p.phone=editData.phone!==undefined?editData.phone:(p.phone||'');
-  p.oz=editData.oz||p.oz; p.oe=editData.oe||p.oe;
+  p.oz=editData.oz!==undefined?editData.oz:p.oz;
+  p.oe=editData.oe!==undefined?editData.oe:p.oe;
   p.photo=editData.photo!==undefined?editData.photo:(p.photo||'');
   p.sz=editData.sz!==undefined?editData.sz:p.sz;
   p.se=editData.se!==undefined?editData.se:p.se;
@@ -4322,6 +4705,7 @@ function openAddModal(preselPid){
     renderAddPickerTags('spouse');
   }
   openOv('ov-add');
+  refreshFlexibleDatePickers();
 }
 
 function initAddPicker(rel,excludePid){
@@ -5807,6 +6191,7 @@ function ptToggleAddForm(){
     document.getElementById('pt-add-en').value='';
     document.getElementById('pt-add-g').value='m';
     document.getElementById('pt-add-birth').value='';
+    refreshFlexibleDatePickers();
     setTimeout(()=>document.getElementById('pt-add-zh').focus(),50);
   }
 }
@@ -5839,6 +6224,7 @@ function renderPeopleTable(){
   const sortKey=document.getElementById('pt-sort')?.value||'id';
   const headers=[
     {zh:'ID',en:'ID',cls:'pt-id'},
+    {zh:'操作',en:'Actions',cls:'pt-act'},
     {zh:'世代',en:'Gen',cls:'pt-gen'},
     {zh:'中文姓名',en:'Name (ZH)',cls:'pt-zh'},    {zh:'英文姓名',en:'Name (EN)',cls:'pt-en'},
     {zh:'性別',en:'Sex',cls:'pt-sx'},
@@ -5854,7 +6240,6 @@ function renderPeopleTable(){
     {zh:'職業（英）',en:'Job (EN)',cls:'pt-oe'},
     {zh:'故事（中）',en:'Story (ZH)',cls:'pt-st'},
     {zh:'故事（英）',en:'Story (EN)',cls:'pt-st'},
-    {zh:'操作',en:'Actions',cls:'pt-act'},
   ];
   const thead=document.getElementById('pt-thead');
   if(thead)thead.innerHTML=headers.map(h=>`<th${h.cls?` class="${h.cls}"`:''}>${zh?h.zh:h.en}</th>`).join('');
@@ -5914,12 +6299,26 @@ function renderPeopleTable(){
 
     return `<tr id="pt-row-${p.id}"${rowClass}${clickEv}>
       <td class="pt-id">${p.id}</td>
+      <td class="pt-act">
+        ${isSel ? `
+          <div class="pt-actions">
+            <button class="pt-act-btn save" onclick="event.stopPropagation();ptSaveRowEdit()">${zh ? '儲存' : 'Save'}</button>
+            <button class="pt-act-btn" onclick="event.stopPropagation();ptCancelRowEdit()">${zh ? '取消' : 'Cancel'}</button>
+            <button class="pt-act-btn del" onclick="event.stopPropagation();ptDeleteFromTable()">${zh ? '刪除' : 'Delete'}</button>
+          </div>
+        ` : (hasEditAccess() ? `
+          <div class="pt-actions">
+            <button class="pt-act-btn" onclick="event.stopPropagation();ptSelectPerson('${p.id}')">${zh ? '✎ 編輯' : '✎ Edit'}</button>
+            <button class="pt-act-btn del" onclick="event.stopPropagation();deletePerson('${p.id}')">${zh ? '刪除' : 'Delete'}</button>
+          </div>
+        ` : '')}
+      </td>
       <td class="pt-gen">${gen}</td>
       <td class="pt-zh">${isSel ? `<input class="pt-cell-inp" value="${hesc(draft.zh)}" oninput="ptDraft.zh=this.value" onclick="event.stopPropagation()">` : hesc(zhName)}</td>
       <td class="pt-en">${isSel ? `<input class="pt-cell-inp" value="${hesc(draft.en)}" oninput="ptDraft.en=this.value" onclick="event.stopPropagation()">` : hesc(enName)}</td>
       <td class="pt-sx">${isSel ? `<select class="pt-cell-sel" onchange="ptDraft.g=this.value" onclick="event.stopPropagation()"><option value="m"${draft.g === 'm' ? ' selected' : ''}>${zh ? '男' : 'Male'}</option><option value="f"${draft.g === 'f' ? ' selected' : ''}>${zh ? '女' : 'Female'}</option></select>` : sexLabel}</td>
-      <td class="pt-yr">${isSel ? `<input class="pt-cell-inp" type="text" value="${hesc(draft.birth || '')}" placeholder="${hesc(flexibleDatePlaceholder())}" autocomplete="off" spellcheck="false" oninput="ptDraft.birth=this.value" onclick="event.stopPropagation()">` : birthVal}</td>
-      <td class="pt-yr">${isSel ? `<input class="pt-cell-inp" type="text" value="${hesc(draft.death || '')}" placeholder="${hesc(flexibleDatePlaceholder())}" autocomplete="off" spellcheck="false" oninput="ptDraft.death=this.value" onclick="event.stopPropagation()">` : deathVal}</td>
+      <td class="pt-yr">${isSel ? `<input class="pt-cell-inp" id="pt-edit-birth" type="text" value="${hesc(draft.birth || '')}" placeholder="${hesc(flexibleDatePlaceholder())}" autocomplete="off" spellcheck="false" oninput="ptDraft.birth=this.value" onclick="event.stopPropagation()">` : birthVal}</td>
+      <td class="pt-yr">${isSel ? `<input class="pt-cell-inp" id="pt-edit-death" type="text" value="${hesc(draft.death || '')}" placeholder="${hesc(flexibleDatePlaceholder())}" autocomplete="off" spellcheck="false" oninput="ptDraft.death=this.value" onclick="event.stopPropagation()">` : deathVal}</td>
       <td class="pt-fm">${isSel ? `<select class="pt-cell-sel" onchange="ptDraft.fatherId=this.value" onclick="event.stopPropagation()">${fatherOpts}</select>` : hesc(fName)}</td>
       <td class="pt-fm">${isSel ? `<select class="pt-cell-sel" onchange="ptDraft.motherId=this.value" onclick="event.stopPropagation()">${motherOpts}</select>` : hesc(mName)}</td>
       <td class="pt-sp"><div style="display:flex;align-items:center;justify-content:space-between"><span>${hesc(isSel ? ((draft.spouseIds || []).map(id => P[id]).filter(Boolean).map(s => zh ? s.zh : s.en).join(', ') || '—') : spouseNames)}</span>${isSel ? `<button class="pt-rel-btn" onclick="event.stopPropagation();openRelPicker('spouse')">✎</button>` : ''}</div></td>
@@ -5930,19 +6329,9 @@ function renderPeopleTable(){
       <td class="pt-oe">${isSel ? `<input class="pt-cell-inp" value="${hesc(draft.oe)}" oninput="ptDraft.oe=this.value" onclick="event.stopPropagation()">` : hesc(p.oe || '—')}</td>
       <td class="pt-st" onclick="event.stopPropagation();${hasEditAccess() ? `openStoryEdit('sz')` : ''}">${hesc(p.sz || '...') }</td>
       <td class="pt-st" onclick="event.stopPropagation();${hasEditAccess() ? `openStoryEdit('se')` : ''}">${hesc(p.se || '...') }</td>
-      <td class="pt-act">
-        ${isSel ? `
-          <div class="pt-actions">
-            <button class="pt-act-btn save" onclick="event.stopPropagation();ptSaveRowEdit()">${zh ? '儲存' : 'Save'}</button>
-            <button class="pt-act-btn" onclick="event.stopPropagation();ptCancelRowEdit()">${zh ? '取消' : 'Cancel'}</button>
-            <button class="pt-act-btn del" onclick="event.stopPropagation();ptDeleteFromTable()">×</button>
-          </div>
-        ` : (hasEditAccess() ? `
-          <button class="pt-act-btn" onclick="event.stopPropagation();ptSelectPerson('${p.id}')">${zh ? '✎ 編輯' : '✎ Edit'}</button>
-        ` : '')}
-      </td>
     </tr>`;
   }).join('');
+  refreshFlexibleDatePickers();
 }
 
 function exportTableToCSV() {
