@@ -533,6 +533,62 @@ table.pt tr.pt-sel-row td{background:rgba(184,146,58,0.08)!important}
 .modal{background:var(--p2);border:1px solid var(--bd);border-radius:5px;
   box-shadow:0 6px 32px rgba(44,36,32,.18);width:100%;max-width:480px;
   max-height:90vh;overflow-y:auto}
+#ov-version-history{justify-content:flex-end;align-items:stretch;padding:0;background:rgba(44,36,32,.28)}
+#ov-version-history .modal{
+  width:min(460px,100vw);
+  max-width:min(460px,100vw);
+  height:100%;
+  max-height:100vh;
+  margin-left:auto;
+  border-radius:0;
+  border-top:none;
+  border-right:none;
+  border-bottom:none;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  box-shadow:-16px 0 36px rgba(44,36,32,.16);
+  transform:translateX(26px);
+  opacity:.98;
+  transition:transform .22s ease, opacity .22s ease;
+}
+#ov-version-history.open .modal{transform:translateX(0);opacity:1}
+#ov-version-history .mhdr{padding:18px 20px}
+#ov-version-history .mbody{
+  padding:18px 18px 20px;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  flex:1;
+  min-height:0;
+}
+#ov-version-history .mttl{font-size:calc(var(--fs-modal-title) - 1px)}
+#version-history-list{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  flex:1;
+  min-height:0;
+  overflow:auto;
+  padding-right:4px;
+}
+.version-history-card{
+  display:flex;
+  justify-content:space-between;
+  gap:14px;
+  align-items:center;
+  padding:12px 14px;
+  border:1px solid var(--bd);
+  border-radius:14px;
+  background:rgba(255,255,255,.72);
+}
+.version-history-empty{
+  padding:18px;
+  border:1px dashed var(--bd);
+  border-radius:12px;
+  color:var(--ink3);
+  text-align:center;
+}
 .mhdr{padding:var(--mhdr-pad);background:var(--p3);border-bottom:1px solid var(--bd);
   display:flex;justify-content:space-between;align-items:center}
 .mttl{font-size:var(--fs-modal-title);font-weight:700}
@@ -683,6 +739,8 @@ body.header-compact .zpct{
   .adm-add-inp{width:180px}
   .ov{padding:16px}
   .modal{max-width:100%}
+  #ov-version-history{padding:0}
+  #ov-version-history .modal{width:min(420px,100vw);max-width:min(420px,100vw)}
 
   /* Welcome dashboard */
   #welcome-dashboard{padding:28px !important}
@@ -742,6 +800,12 @@ body.header-compact .zpct{
   .modal{max-width:100%;border-radius:4px}
   .mbody{padding:16px}
   .mhdr{padding:14px 16px}
+  #ov-version-history .modal{
+    width:100vw;
+    max-width:100vw;
+    box-shadow:none;
+  }
+  #ov-version-history .mbody{padding:16px 14px 18px}
   .frow{grid-template-columns:1fr}
 
   /* Right panel */
@@ -916,6 +980,7 @@ body.header-compact .zpct{
     <div class="hdr-meta">
       <div class="stat-badge" id="people-count">總人數：0</div>
       <button class="hbtn-meta" onclick="reloadCurrentTreeFromDrive()" id="hdr-drive-reload" style="display:none">從 Drive 重新載入</button>
+      <button class="hbtn-meta" onclick="openVersionHistory()" id="hdr-version-history" style="display:none">版本記錄</button>
       <button class="hbtn-meta" onclick="undoEdit()" id="hdr-undo">復原</button>
       <button class="hbtn-meta" onclick="redoEdit()" id="hdr-redo">重做</button>
     </div>
@@ -1272,6 +1337,19 @@ body.header-compact .zpct{
   </div>
 </div>
 
+<!-- ══ VERSION HISTORY MODAL ══ -->
+<div class="ov" id="ov-version-history">
+  <div class="modal m-md">
+    <div class="mhdr"><div class="mttl" id="version-history-ttl">版本記錄</div><button class="mclose" onclick="closeOv('ov-version-history')">×</button></div>
+    <div class="mbody">
+      <div class="fnote" id="version-history-note" style="text-align:left;line-height:1.6;margin-bottom:14px">
+        這裡會顯示同一個 private_tree.json 在最近 7 天內保留的 Drive 版本，可選擇還原。
+      </div>
+      <div id="version-history-list" style="display:flex;flex-direction:column;gap:10px;max-height:360px;overflow:auto"></div>
+    </div>
+  </div>
+</div>
+
 <!-- ══ ADD PERSON MODAL ══ -->
 <div class="ov" id="ov-add">
   <div class="modal m-md">
@@ -1429,6 +1507,8 @@ let gisAuthInitialized = false;
 let pendingLegalContinuation = null;
 // Drive load state machine: idle → requesting_token → searching → loading → loaded | no_tree_found | error
 let driveLoadState = 'idle';
+const TREE_VERSION_RETENTION_DAYS = 7;
+let treeVersionEntries = [];
 
 // ── localStorage metadata cache (prevents duplicate files across sessions) ──
 const DRIVE_META_KEY = 'family-heritage-drive-meta'; // stores {email, folderId, fileId, treeId}
@@ -2379,6 +2459,83 @@ function handleCreateMyTree() {
   saveAllDataToDrive();
 }
 
+function parseDriveJsonResponse(resp, label = 'Drive JSON') {
+  try {
+    if (typeof resp.body === 'string' && resp.body.trim().startsWith('{')) {
+      return JSON.parse(resp.body);
+    }
+    if (resp.result && typeof resp.result === 'object') {
+      return resp.result;
+    }
+    return JSON.parse(String(resp.result || resp.body || ''));
+  } catch (parseErr) {
+    throw new Error(`Could not parse ${label}: ${parseErr.message}`);
+  }
+}
+
+function populateRuntimeFromTreeData(treeData, treeFile = {}, options = {}) {
+  const preserveCurrentVersionMeta = !!options.preserveCurrentVersionMeta;
+  const liveVersionMeta = preserveCurrentVersionMeta ? {
+    privateTreeFileId: TREE_META.privateTreeFileId,
+    driveFolderId: TREE_META.driveFolderId,
+    privateTreeModifiedTime: TREE_META.privateTreeModifiedTime,
+    privateTreeLastEditedAt: TREE_META.privateTreeLastEditedAt
+  } : null;
+
+  for (const k in P) delete P[k];
+  for (const [id, jp] of Object.entries(treeData.persons || {})) {
+    P[id] = adaptPerson(jp);
+  }
+
+  U.length = 0;
+  (treeData.unions || []).forEach(ju => U.push(adaptUnion(ju)));
+
+  for (const k in CMTS) delete CMTS[k];
+  if (treeData.comments) Object.assign(CMTS, adaptComments(treeData.comments));
+
+  CURRENT_TREE.members = treeData.members || [];
+  CURRENT_TREE.settings = treeData.settings || {};
+  CURRENT_TREE.isLoaded = true;
+
+  if (treeFile.id) {
+    TREE_META.privateTreeFileId = treeFile.id;
+  }
+  if (!preserveCurrentVersionMeta) {
+    TREE_META.privateTreeModifiedTime = treeFile.modifiedTime || '';
+  }
+  if (treeFile.parents && treeFile.parents[0]) {
+    TREE_META.driveFolderId = treeFile.parents[0];
+  }
+
+  if (treeData.metadata) {
+    TREE_META.treeId = treeData.metadata.treeId || TREE_META.treeId;
+    TREE_META.publicFileId = treeData.metadata.publicFileId || '';
+    TREE_META.publicLinkActive = !!treeData.metadata.publicLinkActive;
+    if (treeData.metadata.driveFolderId) {
+      TREE_META.driveFolderId = treeData.metadata.driveFolderId;
+    }
+    if (!preserveCurrentVersionMeta) {
+      TREE_META.privateTreeLastEditedAt = treeData.metadata.lastEditedAt || treeData.metadata.privateTreeLastEditedAt || '';
+    }
+    if (treeData.metadata.familyName) {
+      TREE_META.familyName.zh = treeData.metadata.familyName.zh || TREE_META.familyName.zh;
+      TREE_META.familyName.en = treeData.metadata.familyName.en || TREE_META.familyName.en;
+    }
+  }
+
+  if (preserveCurrentVersionMeta && liveVersionMeta) {
+    TREE_META.privateTreeFileId = liveVersionMeta.privateTreeFileId;
+    TREE_META.driveFolderId = liveVersionMeta.driveFolderId;
+    TREE_META.privateTreeModifiedTime = liveVersionMeta.privateTreeModifiedTime;
+    TREE_META.privateTreeLastEditedAt = liveVersionMeta.privateTreeLastEditedAt;
+  }
+
+  resolveUserRole();
+  ensurePersonDefaults();
+  clearGenCache();
+  normalizeUnions();
+}
+
 /**
  * Searches the signed-in user's Google Drive (within drive.file scope) for a
  * file named private_tree.json. If found, downloads and parses it into the
@@ -2479,66 +2636,8 @@ async function loadAllDataFromDrive(options = {}) {
       params: { alt: 'media' }
     });
 
-    // When alt=media, GAPI returns raw body in resp.body (string).
-    // For JSON files it may also surface as resp.result if GAPI auto-parses it.
-    let treeData;
-    try {
-      if (typeof fileResp.body === 'string' && fileResp.body.trim().startsWith('{')) {
-        treeData = JSON.parse(fileResp.body);
-      } else if (fileResp.result && typeof fileResp.result === 'object') {
-        treeData = fileResp.result;
-      } else {
-        treeData = JSON.parse(String(fileResp.result || fileResp.body));
-      }
-    } catch (parseErr) {
-      throw new Error('Could not parse private_tree.json from Drive: ' + parseErr.message);
-    }
-
-    // ── Step 4: populate runtime stores ─────────────────────────────────────
-    for (const k in P) delete P[k];
-    for (const [id, jp] of Object.entries(treeData.persons || {})) {
-      P[id] = adaptPerson(jp);
-    }
-
-    U.length = 0;
-    (treeData.unions || []).forEach(ju => U.push(adaptUnion(ju)));
-
-    for (const k in CMTS) delete CMTS[k];
-    if (treeData.comments) Object.assign(CMTS, adaptComments(treeData.comments));
-
-    CURRENT_TREE.members = treeData.members || [];
-    CURRENT_TREE.settings = treeData.settings || {};
-    CURRENT_TREE.isLoaded = true;
-
-    // ── Step 5: record Drive file & folder IDs for future saves ─────────────
-    TREE_META.privateTreeFileId = treeFile.id;
-    TREE_META.privateTreeModifiedTime = treeFile.modifiedTime || '';
-    if (treeFile.parents && treeFile.parents[0]) {
-      TREE_META.driveFolderId = treeFile.parents[0];
-    }
-    if (treeData.metadata) {
-      TREE_META.treeId = treeData.metadata.treeId || TREE_META.treeId;
-      TREE_META.publicFileId = treeData.metadata.publicFileId || '';
-      TREE_META.publicLinkActive = !!treeData.metadata.publicLinkActive;
-      // metadata.driveFolderId takes precedence over parents[0] if it is recorded
-      if (treeData.metadata.driveFolderId) {
-        TREE_META.driveFolderId = treeData.metadata.driveFolderId;
-      }
-      // Keep the real Drive file modifiedTime authoritative. The copy stored
-      // inside JSON metadata is only informational and becomes stale after the
-      // next upload, so using it for runtime conflict checks causes false positives.
-      TREE_META.privateTreeLastEditedAt = treeData.metadata.lastEditedAt || treeData.metadata.privateTreeLastEditedAt || '';
-      if (treeData.metadata.familyName) {
-        TREE_META.familyName.zh = treeData.metadata.familyName.zh || TREE_META.familyName.zh;
-        TREE_META.familyName.en = treeData.metadata.familyName.en || TREE_META.familyName.en;
-      }
-    }
-
-    // ── Step 6: resolve role now that members list is from the real file ─────
-    resolveUserRole();
-    ensurePersonDefaults();
-    clearGenCache();
-    normalizeUnions();
+    const treeData = parseDriveJsonResponse(fileResp, 'private_tree.json from Drive');
+    populateRuntimeFromTreeData(treeData, treeFile);
 
     driveLoadState = 'loaded';
     saveDriveMetaCache(); // persist IDs so returning user can auto-load next time
@@ -2753,20 +2852,290 @@ async function fetchDriveTreeVersion(fileId) {
     method: 'GET',
     params: { alt: 'media' }
   });
-
-  let treeData;
-  if (typeof resp.body === 'string' && resp.body.trim().startsWith('{')) {
-    treeData = JSON.parse(resp.body);
-  } else if (resp.result && typeof resp.result === 'object') {
-    treeData = resp.result;
-  } else {
-    treeData = JSON.parse(String(resp.result || resp.body));
-  }
+  const treeData = parseDriveJsonResponse(resp, 'private_tree.json version');
 
   return {
     lastEditedAt: treeData?.metadata?.lastEditedAt || treeData?.metadata?.privateTreeLastEditedAt || '',
     modifiedTime: ''
   };
+}
+
+async function fetchDriveHeadRevisionId(fileId) {
+  if (!fileId) return '';
+  const resp = await gapi.client.request({
+    path: `/drive/v3/files/${fileId}`,
+    method: 'GET',
+    params: { fields: 'headRevisionId' }
+  });
+  return resp.result?.headRevisionId || '';
+}
+
+async function listDriveRevisions(fileId) {
+  if (!fileId) return [];
+  const resp = await gapi.client.request({
+    path: `/drive/v3/files/${fileId}/revisions`,
+    method: 'GET',
+    params: {
+      pageSize: 100,
+      fields: 'revisions(id,modifiedTime,keepForever,lastModifyingUser(displayName,emailAddress)),nextPageToken'
+    }
+  });
+  return Array.isArray(resp.result?.revisions) ? resp.result.revisions : [];
+}
+
+async function markDriveRevisionKeepForever(fileId, revisionId) {
+  if (!fileId || !revisionId) return null;
+  const resp = await gapi.client.request({
+    path: `/drive/v3/files/${fileId}/revisions/${revisionId}`,
+    method: 'PATCH',
+    params: { fields: 'id,keepForever,modifiedTime' },
+    body: { keepForever: true }
+  });
+  return resp.result || null;
+}
+
+async function deleteDriveRevision(fileId, revisionId) {
+  if (!fileId || !revisionId) return;
+  await gapi.client.request({
+    path: `/drive/v3/files/${fileId}/revisions/${revisionId}`,
+    method: 'DELETE'
+  });
+}
+
+function treeVersionCutoffMs() {
+  return Date.now() - TREE_VERSION_RETENTION_DAYS * 24 * 60 * 60 * 1000;
+}
+
+async function syncDriveRevisionRetention(fileId) {
+  if (!fileId) return [];
+  const cutoffMs = treeVersionCutoffMs();
+  const headRevisionId = await fetchDriveHeadRevisionId(fileId);
+  let revisions = await listDriveRevisions(fileId);
+
+  for (const rev of revisions) {
+    const revMs = Date.parse(rev.modifiedTime || '');
+    if (!Number.isFinite(revMs)) continue;
+    if (revMs >= cutoffMs && !rev.keepForever) {
+      try {
+        await markDriveRevisionKeepForever(fileId, rev.id);
+        rev.keepForever = true;
+      } catch (err) {
+        console.warn('[Drive] Could not mark revision keepForever:', rev.id, err);
+      }
+    }
+  }
+
+  for (const rev of revisions) {
+    const revMs = Date.parse(rev.modifiedTime || '');
+    if (!Number.isFinite(revMs)) continue;
+    if (rev.keepForever && revMs < cutoffMs && rev.id !== headRevisionId) {
+      try {
+        await deleteDriveRevision(fileId, rev.id);
+      } catch (err) {
+        console.warn('[Drive] Could not delete expired kept revision:', rev.id, err);
+      }
+    }
+  }
+
+  revisions = await listDriveRevisions(fileId);
+  return revisions;
+}
+
+function formatVersionHistoryStamp(iso) {
+  if (!iso) return LANG === 'zh' ? '未知時間' : 'Unknown time';
+  try {
+    return new Intl.DateTimeFormat(LANG === 'zh' ? 'zh-HK' : 'en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit'
+    }).format(new Date(iso));
+  } catch (_) {
+    return iso;
+  }
+}
+
+function renderVersionHistoryList(entries) {
+  const zh = LANG === 'zh';
+  const list = document.getElementById('version-history-list');
+  if (!list) return;
+
+  if (!entries.length) {
+    list.innerHTML = `<div class="version-history-empty">
+      ${zh ? '最近 7 天內暫時沒有可用版本。完成幾次儲存後，這裡就會出現版本記錄。' : 'No retained versions are available from the last 7 days yet. Save the tree a few times and they will appear here.'}
+    </div>`;
+    return;
+  }
+
+  list.innerHTML = entries.map(entry => {
+    const editor = entry.lastModifyingUser?.displayName || entry.lastModifyingUser?.emailAddress || (zh ? '未知使用者' : 'Unknown user');
+    const restoreLabel = entry.isHead
+      ? (zh ? '目前版本' : 'Current')
+      : (entry.keepForever ? (zh ? '還原' : 'Restore') : (zh ? '不可還原' : 'Unavailable'));
+    const disabled = entry.isHead || !entry.keepForever ? 'disabled' : '';
+    const buttonStyle = entry.isHead
+      ? 'background:var(--p2);color:var(--ink3);cursor:default;'
+      : '';
+    return `<div class="version-history-card">
+      <div style="min-width:0">
+        <div style="font-weight:700;color:var(--ink);margin-bottom:4px">${hesc(formatVersionHistoryStamp(entry.modifiedTime))}</div>
+        <div style="font-size:12px;color:var(--ink3);line-height:1.5">
+          ${zh ? '修改者' : 'Edited by'}: ${hesc(editor)}
+          ${entry.keepForever ? ` · ${zh ? '已保留' : 'Retained'}` : ` · ${zh ? '未固定' : 'Not retained'}`}
+        </div>
+      </div>
+      <button class="hbtn-meta" onclick="restoreTreeRevision('${entry.id}')" ${disabled} style="white-space:nowrap;${buttonStyle}">${restoreLabel}</button>
+    </div>`;
+  }).join('');
+}
+
+function hasDriveAccessToken() {
+  return !!(
+    typeof gapi !== 'undefined' &&
+    gapi.client &&
+    typeof gapi.client.getToken === 'function' &&
+    gapi.client.getToken()
+  );
+}
+
+function ensureDriveTokenForAction(onReady) {
+  const zh = LANG === 'zh';
+  if (!gapiInited || !tokenClient) {
+    alert(zh ? 'Google Drive 尚未準備好。請稍後再試。' : 'Google Drive is not ready yet. Please try again shortly.');
+    return;
+  }
+  if (hasDriveAccessToken()) {
+    onReady();
+    return;
+  }
+  showDriveConsentExplanation(() => {
+    tokenClient.callback = async (resp) => {
+      if (resp.error !== undefined) {
+        console.warn('[Drive] Token request declined:', resp.error);
+        driveLoadState = 'idle';
+        showDriveLoadBanner('token_declined');
+        return;
+      }
+      gapi.client.setToken(resp);
+      onReady();
+    };
+    tokenClient.requestAccessToken({ prompt: '' });
+  });
+}
+
+async function loadVersionHistoryIntoModal() {
+  const zh = LANG === 'zh';
+  const list = document.getElementById('version-history-list');
+  if (!TREE_META.privateTreeFileId) {
+    if (list) list.innerHTML = `<div class="version-history-empty">
+      ${zh ? '請先建立或開啟家族樹，之後才會有版本記錄。' : 'Create or open a family tree first to use version history.'}
+    </div>`;
+    return;
+  }
+
+  if (list) {
+    list.innerHTML = `<div class="version-history-empty">
+      ${zh ? '正在整理最近 7 天的版本記錄…' : 'Preparing the last 7 days of version history…'}
+    </div>`;
+  }
+
+  const allRevisions = await syncDriveRevisionRetention(TREE_META.privateTreeFileId);
+  const headRevisionId = await fetchDriveHeadRevisionId(TREE_META.privateTreeFileId);
+  const cutoffMs = treeVersionCutoffMs();
+  treeVersionEntries = allRevisions
+    .filter(rev => {
+      const revMs = Date.parse(rev.modifiedTime || '');
+      return Number.isFinite(revMs) && revMs >= cutoffMs;
+    })
+    .map(rev => ({ ...rev, isHead: rev.id === headRevisionId }))
+    .sort((a, b) => Date.parse(b.modifiedTime || 0) - Date.parse(a.modifiedTime || 0));
+
+  renderVersionHistoryList(treeVersionEntries);
+}
+
+function openVersionHistory() {
+  if (!ensureLegalAcknowledgement(() => openVersionHistory())) return;
+  ensureDriveTokenForAction(async () => {
+    openOv('ov-version-history');
+    try {
+      await loadVersionHistoryIntoModal();
+    } catch (err) {
+      console.error('[Drive] Failed to load version history:', err);
+      const list = document.getElementById('version-history-list');
+      if (list) {
+        list.innerHTML = `<div class="version-history-empty">
+          ${LANG === 'zh' ? '讀取版本記錄時發生錯誤。' : 'Failed to load version history.'}
+        </div>`;
+      }
+    }
+  });
+}
+
+async function fetchDriveRevisionTree(fileId, revisionId) {
+  const resp = await gapi.client.request({
+    path: `/drive/v3/files/${fileId}/revisions/${revisionId}`,
+    method: 'GET',
+    params: { alt: 'media' }
+  });
+  return parseDriveJsonResponse(resp, 'Drive revision');
+}
+
+async function restoreTreeRevision(revisionId) {
+  const zh = LANG === 'zh';
+  const entry = treeVersionEntries.find(rev => rev.id === revisionId);
+  if (!entry || !TREE_META.privateTreeFileId) return;
+  if (entry.isHead) return;
+  if (!entry.keepForever) {
+    alert(zh ? '這個版本尚未保留，暫時無法還原。' : 'This version is not retained yet and cannot be restored right now.');
+    return;
+  }
+
+  const stamp = formatVersionHistoryStamp(entry.modifiedTime);
+  const confirmed = window.confirm(
+    zh
+      ? `確定要將家族樹還原至 ${stamp} 的版本嗎？系統會把該版本重新儲存成目前版本。`
+      : `Restore the family tree to the version from ${stamp}? This will save that revision back as the current version.`
+  );
+  if (!confirmed) return;
+
+  const liveContext = {
+    fileId: TREE_META.privateTreeFileId,
+    driveFolderId: TREE_META.driveFolderId,
+    privateTreeModifiedTime: TREE_META.privateTreeModifiedTime,
+    privateTreeLastEditedAt: TREE_META.privateTreeLastEditedAt
+  };
+
+  try {
+    showDriveLoadBanner('loading');
+    const treeData = await fetchDriveRevisionTree(liveContext.fileId, revisionId);
+    populateRuntimeFromTreeData(
+      treeData,
+      {
+        id: liveContext.fileId,
+        parents: liveContext.driveFolderId ? [liveContext.driveFolderId] : [],
+        modifiedTime: liveContext.privateTreeModifiedTime
+      },
+      { preserveCurrentVersionMeta: true }
+    );
+    renderCurrentPage();
+    takeSnapshot();
+    closeOv('ov-version-history');
+
+    const saved = await executeDriveSave();
+    if (!saved) {
+      await loadAllDataFromDrive({ preferredFileId: liveContext.fileId });
+      return;
+    }
+
+    await loadVersionHistoryIntoModal().catch(err => console.warn('[Drive] Could not refresh version history after restore:', err));
+  } catch (err) {
+    console.error('[Drive] Failed to restore revision:', err);
+    alert(zh ? '還原版本時發生錯誤。' : 'Error restoring this version.');
+    await loadAllDataFromDrive({ preferredFileId: liveContext.fileId }).catch(loadErr => {
+      console.warn('[Drive] Failed to reload current tree after restore error:', loadErr);
+    });
+  }
 }
 
 async function executeDriveSave() {
@@ -2880,6 +3249,11 @@ async function executeDriveSave() {
       TREE_META.privateTreeFileId = fileResult.id;
       TREE_META.privateTreeModifiedTime = fileResult.modifiedTime || TREE_META.privateTreeModifiedTime;
       TREE_META.privateTreeLastEditedAt = privateTree.metadata.lastEditedAt || new Date().toISOString();
+      try {
+        await syncDriveRevisionRetention(fileResult.id);
+      } catch (revisionErr) {
+        console.warn('[Drive] Saved current tree, but could not fully refresh version history retention:', revisionErr);
+      }
       driveLoadState = 'loaded';
       saveDriveMetaCache();       // persist IDs to localStorage
       CloudStorage.saveAll();     // persist full state to localStorage
@@ -5091,6 +5465,8 @@ function applyStaticLang(){
   const joinBtn = document.getElementById('hdr-join');
   const treeSwitchBtn = document.getElementById('hdr-tree-switch');
   const driveReloadBtn = document.getElementById('hdr-drive-reload');
+  const versionHistoryBtn = document.getElementById('hdr-version-history');
+  const canUseVersionHistory = CURRENT_USER.isAuthenticated && !!TREE_META.privateTreeFileId && (CURRENT_TREE.role === 'owner' || CURRENT_TREE.role === 'editor');
 
   if (CURRENT_USER.isAuthenticated) {
     if (authBtn) authBtn.textContent = zh ? '帳戶' : 'Account';
@@ -5099,6 +5475,10 @@ function applyStaticLang(){
     if (driveReloadBtn) {
       driveReloadBtn.style.display = TREE_META.privateTreeFileId ? 'inline-flex' : 'none';
       driveReloadBtn.textContent = zh ? '從 Drive 重新載入' : 'Reload From Drive';
+    }
+    if (versionHistoryBtn) {
+      versionHistoryBtn.style.display = canUseVersionHistory ? 'inline-flex' : 'none';
+      versionHistoryBtn.textContent = zh ? '版本記錄' : 'Version History';
     }
 
     // Tree Switcher button: available to any signed-in user so they can
@@ -5112,6 +5492,7 @@ function applyStaticLang(){
     if (joinBtn) joinBtn.style.display = 'inline-flex';
     if (joinBtn) joinBtn.textContent = zh ? '加入' : 'Join';
     if (driveReloadBtn) driveReloadBtn.style.display = 'none';
+    if (versionHistoryBtn) versionHistoryBtn.style.display = 'none';
     if (treeSwitchBtn) treeSwitchBtn.style.display = 'none';
   }
 
@@ -5141,6 +5522,8 @@ function applyStaticLang(){
   setTxt('hdr-undo', zh ? '復原' : 'Undo');
   setTxt('hdr-redo', zh ? '重做' : 'Redo');
   setTxt('hdr-guide', zh ? '📖 使用教學' : '📖 User Guide');
+  setTxt('version-history-ttl', zh ? `版本記錄（最近 ${TREE_VERSION_RETENTION_DAYS} 天）` : `Version History (Last ${TREE_VERSION_RETENTION_DAYS} Days)`);
+  setTxt('version-history-note', zh ? '這裡顯示同一個 private_tree.json 在最近 7 天內保留的 Drive 版本。還原後，系統會把所選版本重新儲存成目前版本。' : 'This shows retained Google Drive revisions of the same private_tree.json from the last 7 days. Restoring one will save that revision back as the current version.');
   setTxt('share-btn-txt', zh ? '分享' : 'Share'); // button hidden; label kept for safety
   setTxt('family-reminder-txt', zh ? '此家族樹主要供家族內部查看與整理。分享前請確認內容是否適合，並避免公開分享仍在世親屬的個人資料或故事。' : "This family tree is primarily intended for family use and internal collaboration. Before sharing, please review the content carefully and avoid public sharing of living relatives' personal information or stories.");
 
@@ -5467,13 +5850,15 @@ function renderAdmin(){
 
     // ── Action buttons ──
     let actionBtns='';
-    if(isOwner && !isSelf && !isImmutableOwner){
+    if(isOwner){
       if(isEditing){
         actionBtns=`<button class="adm-rm-btn" onclick="admSaveMemberEdit(${idx})" title="${zh?'儲存':'Save'}" style="background:var(--gold);color:#fff;border-color:var(--gold)">💾</button>
           <button class="adm-rm-btn" onclick="admCancelEdit()" title="${zh?'取消':'Cancel'}">✕</button>`;
       } else {
-        actionBtns=`<button class="adm-rm-btn" onclick="admStartEdit(${idx})" title="${zh?'編輯':'Edit'}" style="background:transparent;color:var(--gold);border-color:var(--gold)">✎</button>
-          <button class="adm-rm-btn" onclick="admRemoveMember(${idx})" title="${zh?'移除':'Remove'}">✕</button>`;
+        actionBtns=`<button class="adm-rm-btn" onclick="admStartEdit(${idx})" title="${zh?'編輯':'Edit'}" style="background:transparent;color:var(--gold);border-color:var(--gold)">✎</button>`;
+        if(!isSelf && !isImmutableOwner){
+          actionBtns+=`<button class="adm-rm-btn" onclick="admRemoveMember(${idx})" title="${zh?'移除':'Remove'}">✕</button>`;
+        }
       }
     }
 
@@ -5491,7 +5876,6 @@ function renderAdmin(){
 
 function admStartEdit(idx){
   if(!CURRENT_TREE.members||!CURRENT_TREE.members[idx]) return;
-  if(idx===getImmutableOwnerIndex() || ((CURRENT_TREE.members[idx].gmail||'').toLowerCase())===getImmutableOwnerEmail()) return;
   admEditingIdx=idx;
   renderAdmin();
   // Auto-focus the name input
@@ -5543,12 +5927,7 @@ async function syncMemberPermissionRole(resourceFileId, storedPermissionId, memb
 async function admSaveMemberEdit(idx){
   if(!CURRENT_TREE.members||!CURRENT_TREE.members[idx]) return;
   const m=CURRENT_TREE.members[idx];
-  if(idx===getImmutableOwnerIndex() || (m.gmail||'').toLowerCase()===getImmutableOwnerEmail()){
-    m.role='owner';
-    admEditingIdx=null;
-    renderAdmin();
-    return;
-  }
+  const isImmutableOwner = idx===getImmutableOwnerIndex() || (m.gmail||'').toLowerCase()===getImmutableOwnerEmail();
   const hasDriveToken = !!(typeof gapi !== 'undefined' && gapi.client && typeof gapi.client.getToken === 'function' && gapi.client.getToken());
 
   // Save display name
@@ -5560,7 +5939,9 @@ async function admSaveMemberEdit(idx){
 
   // Save role
   const roleSelect=document.getElementById('adm-edit-role-'+idx);
-  if(roleSelect){
+  if(isImmutableOwner){
+    m.role='owner';
+  } else if(roleSelect){
     const newRole=normalizeMemberRole(roleSelect.value);
     if(newRole!==m.role){
       m.role=newRole;
@@ -5869,7 +6250,7 @@ async function reloadCurrentTreeFromDrive() {
   await requestDriveTokenAndLoad({ preferredFileId: fileId });
 }
 
-function admRemoveMember(idx){
+async function admRemoveMember(idx){
   if(!CURRENT_TREE.members||!CURRENT_TREE.members[idx]) return;
   const zh=LANG==='zh';
   const m=CURRENT_TREE.members[idx];
@@ -5882,19 +6263,45 @@ function admRemoveMember(idx){
     return;
   }
   if(!confirm(zh?`確定要移除 ${m.displayName||m.gmail}？`:`Remove ${m.displayName||m.gmail}?`)) return;
-  
-  // Revoke GAPI permission if present
-  if (driveLoadState === 'loaded' && TREE_META.privateTreeFileId && m.drivePermissionId) {
-    gapi.client.request({
-      path: `/drive/v3/files/${TREE_META.privateTreeFileId}/permissions/${m.drivePermissionId}`,
-      method: 'DELETE'
-    }).catch(e => console.warn('[Admin] Permission revocation failed:', e));
-  }
 
+  const filePermissionId = m.drivePermissionId || '';
+  const folderPermissionId = m.driveFolderPermissionId || '';
   CURRENT_TREE.members.splice(idx,1);
+  admEditingIdx = null;
+  resolveUserRole();
   renderAdmin();
   takeSnapshot();
-  persistMemberAdminChanges();
+  await persistMemberAdminChanges();
+
+  const hasDriveClient = !!(
+    driveLoadState === 'loaded' &&
+    typeof gapi !== 'undefined' &&
+    gapi.client &&
+    typeof gapi.client.request === 'function'
+  );
+  if (!hasDriveClient) return;
+
+  if (TREE_META.privateTreeFileId && filePermissionId) {
+    try {
+      await gapi.client.request({
+        path: `/drive/v3/files/${TREE_META.privateTreeFileId}/permissions/${filePermissionId}`,
+        method: 'DELETE'
+      });
+    } catch (e) {
+      console.warn('[Admin] File permission revocation failed:', e);
+    }
+  }
+
+  if (TREE_META.driveFolderId && folderPermissionId) {
+    try {
+      await gapi.client.request({
+        path: `/drive/v3/files/${TREE_META.driveFolderId}/permissions/${folderPermissionId}`,
+        method: 'DELETE'
+      });
+    } catch (e) {
+      console.warn('[Admin] Folder permission revocation failed:', e);
+    }
+  }
 }
 
 function toggleLang(){
