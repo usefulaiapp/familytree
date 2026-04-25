@@ -188,6 +188,19 @@ header{min-height:60px;background:var(--p2);border-bottom:1px solid var(--bd);di
   border-color:var(--gold2);
   color:var(--ink);
 }
+#hdr-manual-save{
+  background:rgba(255,255,255,.72);
+  border-color:rgba(184,146,58,.4);
+  color:var(--ink);
+  font-weight:800;
+  font-size:calc(var(--fs-meta-btn) + 1px);
+  box-shadow:0 1px 2px rgba(44,36,32,.04), inset 0 0 0 1px rgba(255,255,255,.35);
+}
+#hdr-manual-save:hover{
+  background:rgba(255,255,255,.9);
+  border-color:var(--gold2);
+  color:var(--ink);
+}
 
 /* ── TREE CANVAS ── */
 .tree-canvas{flex:1;overflow:hidden;position:relative;background:var(--p);
@@ -844,8 +857,11 @@ body.header-compact .zpct{
 
 /* ── DRIVE STATUS BAR ── */
 #drive-status-bar{
-  flex-shrink:0;padding:6px 22px;font-size:12px;font-family:var(--serif);
+  flex-shrink:0;padding:6px 22px;font-size:var(--fs-note);font-family:var(--serif);
   display:none;align-items:center;gap:8px;line-height:1.4;
+}
+#family-reminder{
+  font-size:var(--fs-note);
 }
 #drive-status-bar.dsb-working{
   background:rgba(184,146,58,.07);color:var(--gold3);
@@ -862,6 +878,16 @@ body.header-compact .zpct{
 #drive-status-bar.dsb-warn{
   background:rgba(185,64,64,.05);color:#b94040;
   border-bottom:1px solid rgba(185,64,64,.14);
+}
+.sync-reminder-bar{
+  display:none;
+  padding:5px 16px;
+  background:rgba(46,125,79,.06);
+  color:#2e6644;
+  border-bottom:1px solid rgba(46,125,79,.14);
+  font-size:var(--fs-note);
+  text-align:center;
+  line-height:1.5;
 }
 .dsb-spinner{
   display:inline-block;width:11px;height:11px;flex-shrink:0;
@@ -980,6 +1006,7 @@ body.header-compact .zpct{
     <div class="hdr-meta">
       <div class="stat-badge" id="people-count">總人數：0</div>
       <button class="hbtn-meta" onclick="reloadCurrentTreeFromDrive()" id="hdr-drive-reload" style="display:none">從 Drive 重新載入</button>
+      <button class="hbtn-meta" onclick="handleDriveSaveClick()" id="hdr-manual-save" style="display:none">手動儲存</button>
       <button class="hbtn-meta" onclick="openVersionHistory()" id="hdr-version-history" style="display:none">版本記錄</button>
       <button class="hbtn-meta" onclick="undoEdit()" id="hdr-undo">復原</button>
       <button class="hbtn-meta" onclick="redoEdit()" id="hdr-redo">重做</button>
@@ -1025,8 +1052,11 @@ body.header-compact .zpct{
       </div>
     </div>
     <!-- Family-use reminder bar -->
-    <div id="family-reminder" style="display:none;padding:5px 16px;background:rgba(184,146,58,0.07);border-bottom:1px solid rgba(184,146,58,0.18);font-size:12px;color:var(--ink3);text-align:center;line-height:1.5">
+    <div id="family-reminder" style="display:none;padding:5px 16px;background:rgba(184,146,58,0.07);border-bottom:1px solid rgba(184,146,58,0.18);color:var(--ink3);text-align:center;line-height:1.5">
       <span id="family-reminder-txt">此家族樹主要供家族內部查看與整理。分享前請確認內容是否適合，並避免公開分享仍在世親屬的個人資料、照片或故事。</span>
+    </div>
+    <div id="sync-reminder" class="sync-reminder-bar">
+      <span id="sync-reminder-txt">每次修改後，請先等候看到綠色的 Google Drive 儲存完成提示，再進行下一次編輯。</span>
     </div>
 
     <!-- Welcome Dashboard (shown if no tree loaded OR authorization required) -->
@@ -1132,6 +1162,10 @@ body.header-compact .zpct{
           <div class="pt-add-col">
             <label class="pt-add-lbl" id="pt-add-birth-lbl">出生年</label>
             <input class="pt-add-inp" id="pt-add-birth" type="text" placeholder="YYYY 或 YYYY-MM-DD" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="pt-add-col">
+            <label class="pt-add-lbl" id="pt-add-sibling-order-lbl">兄弟姊妹排序</label>
+            <input class="pt-add-inp narrow" id="pt-add-sibling-order" type="number" min="1" step="1" placeholder="1">
           </div>
           <div class="pt-add-col" style="justify-content:flex-end">
             <button class="pt-open-btn gold-pri" id="pt-add-submit" onclick="ptAddPerson()">✓ 新增</button>
@@ -1369,6 +1403,7 @@ body.header-compact .zpct{
       </div>
       <div class="frow">
         <div class="fg"><label class="fl" id="add-birth-lbl">出生日期</label><input class="fi" type="text" id="a-birth" placeholder="YYYY 或 YYYY-MM-DD" autocomplete="off" spellcheck="false"></div>
+        <div class="fg"><label class="fl" id="add-sibling-order-lbl">兄弟姊妹排序</label><input class="fi" type="number" id="a-sibling-order" placeholder="例如 1, 2, 3" min="1" step="1"></div>
         <div class="fg"><label class="fl" id="add-death-lbl">離世日期</label><input class="fi" type="text" id="a-death" placeholder="YYYY 或 YYYY-MM-DD" autocomplete="off" spellcheck="false"></div>
       </div>
       <div class="frow">
@@ -1806,6 +1841,7 @@ function adaptPerson(jp){
     en:jp.name_en||jp.en||'',
     g:jp.gender||jp.g||'m',
     birth:jp.birth||'',death:jp.death||'',
+    siblingOrder: jp.siblingOrder!==undefined ? String(jp.siblingOrder) : (jp.ord!==undefined ? String(jp.ord) : ''),
     email:jp.contactGmail||jp.email||'',phone:jp.phone||'',
     oz:jp.occupation_zh||jp.oz||'',oe:jp.occupation_en||jp.oe||'',
     div:jp.div||false,photo:jp.photo||'',
@@ -1908,6 +1944,7 @@ function exportPersonToJson(p) {
     gender: p.g,
     birth: p.birth,
     death: p.death,
+    siblingOrder: p.siblingOrder || '',
     contactGmail: p.email,
     phone: p.phone,
     occupation_zh: p.oz,
@@ -2693,6 +2730,10 @@ async function loadAllDataFromDrive(options = {}) {
  */
 function showDriveLoadBanner(state) {
   const bar = document.getElementById('drive-status-bar');
+  const manualSaveBtn = document.getElementById('hdr-manual-save');
+  if (manualSaveBtn) {
+    manualSaveBtn.disabled = ['requesting_token','searching','loading','saving'].includes(state || '');
+  }
   if (!bar) return;
   const zh = LANG === 'zh';
 
@@ -2711,6 +2752,11 @@ function showDriveLoadBanner(state) {
       cls: 'dsb-working', spinner: true,
       zh: '正在從 Google Drive 載入家族樹…',
       en: 'Loading family tree from Google Drive…'
+    },
+    saving: {
+      cls: 'dsb-working', spinner: true,
+      zh: '正在儲存到 Google Drive…',
+      en: 'Saving to Google Drive…'
     },
     loaded: {
       cls: 'dsb-ok', spinner: false, autoHide: 5000,
@@ -2786,6 +2832,8 @@ function renderCurrentPage() {
   else if (curPage === 'admin') renderAdmin();
   const reminder = document.getElementById('family-reminder');
   if (reminder) reminder.style.display = CURRENT_TREE.isLoaded ? 'block' : 'none';
+  const syncReminder = document.getElementById('sync-reminder');
+  if (syncReminder) syncReminder.style.display = (CURRENT_TREE.isLoaded && hasEditAccess()) ? 'block' : 'none';
 }
 
 // Helper to upload a file to Google Drive using multipart upload
@@ -3175,6 +3223,9 @@ async function executeDriveSave() {
   console.log(`[Drive] Saving to Drive… (${isFirstCreate ? 'CREATE' : 'UPDATE'})`);
 
   try {
+    driveLoadState = 'saving';
+    showDriveLoadBanner('saving');
+
     // On a first-create, always regenerate a sample/default treeId — do NOT
     // gate this on driveFolderId, because a stale folderId restored from
     // DRIVE_META_KEY or MOCK_CLOUD_DATA would previously skip this block and
@@ -3822,6 +3873,12 @@ function personLabel(pid){
   const p=P[pid]||{};
   return (p.birth||'').toString().padEnd(8,'0')+'-'+(p.zh||p.en||pid);
 }
+function siblingOrderKey(pid){
+  const raw = String((P[pid]||{}).siblingOrder || '').trim();
+  if(!raw) return '';
+  const n = parseInt(raw, 10);
+  return Number.isFinite(n) ? String(n).padStart(4,'0') : '';
+}
 function birthKey(pid){
   const p=P[pid]||{};
   const raw=(p.birth||'').trim();
@@ -3832,11 +3889,25 @@ function birthKey(pid){
 function comparePeople(a,b){
   return birthKey(a).localeCompare(birthKey(b))||personLabel(a).localeCompare(personLabel(b),'zh-Hant');
 }
+function compareSiblingPeople(a,b){
+  const aBirth=(P[a]?.birth||'').trim();
+  const bBirth=(P[b]?.birth||'').trim();
+  if(aBirth && bBirth){
+    return comparePeople(a,b);
+  }
+  const aRank=siblingOrderKey(a), bRank=siblingOrderKey(b);
+  if(aRank || bRank){
+    if(aRank && !bRank) return -1;
+    if(!aRank && bRank) return 1;
+    if(aRank !== bRank) return aRank.localeCompare(bRank);
+  }
+  return comparePeople(a,b);
+}
 function partnerOf(u,pid){
   return u.a===pid?u.b:(u.b===pid?u.a:null);
 }
 function unionChildrenOf(u){
-  return [...u.ch].filter(cid=>P[cid]).sort(comparePeople);
+  return [...u.ch].filter(cid=>P[cid]).sort(compareSiblingPeople);
 }
 function layoutUnionsOf(pid){
   return spouseUnionsOf(pid).slice().sort((ua,ub)=>{
@@ -4763,6 +4834,7 @@ function buildViewPanel(pid){
       <div class="rp-field"><span class="rp-k">${zh?'性別':'Gender'}</span><div class="rp-val-wrap"><span class="rp-v" style="color:${p.g==='m'?'var(--mac)':'var(--fac)'}">${p.g==='m'?(zh?'男':'Male'):(zh?'女':'Female')}</span></div></div>
       <div class="rp-field"><span class="rp-k">${zh?'出生日期':'Birth'}</span><div class="rp-val-wrap"><span class="rp-v">${p.birth||empty}</span></div></div>
       <div class="rp-field"><span class="rp-k">${zh?'離世日期':'Death'}</span><div class="rp-val-wrap"><span class="rp-v">${p.death||empty}</span></div></div>
+      <div class="rp-field"><span class="rp-k">${zh?'兄弟姊妹排序':'Sibling Rank'}</span><div class="rp-val-wrap"><span class="rp-v">${p.siblingOrder||empty}</span></div></div>
       <div class="rp-field"><span class="rp-k">${zh?'電郵':'Email'}</span><div class="rp-val-wrap"><span class="rp-v">${p.email||empty}</span></div></div>
       <div class="rp-field"><span class="rp-k">${zh?'電話':'Phone'}</span><div class="rp-val-wrap"><span class="rp-v">${p.phone||empty}</span></div></div>
       <div class="rp-field"><span class="rp-k">${zh?'職業':'Occupation'}</span><div class="rp-val-wrap"><span class="rp-v">${occ||empty}</span></div></div>
@@ -4838,7 +4910,7 @@ function buildEditPanel(pid){
   const spouses=spousesOf(pid);
   const children=childrenOf(pid);
   const zh=LANG==='zh';
-  editData={zh:p.zh,en:p.en,g:p.g,birth:flexibleDateValue(p.birth),death:flexibleDateValue(p.death),birthOrig:p.birth||'',deathOrig:p.death||'',email:p.email,phone:p.phone,oz:p.oz,oe:p.oe,photo:p.photo||'',sz:p.sz,se:p.se,
+  editData={zh:p.zh,en:p.en,g:p.g,birth:flexibleDateValue(p.birth),death:flexibleDateValue(p.death),birthOrig:p.birth||'',deathOrig:p.death||'',siblingOrder:p.siblingOrder||'',email:p.email,phone:p.phone,oz:p.oz,oe:p.oe,photo:p.photo||'',sz:p.sz,se:p.se,
     fatherId:father?.id||null, motherId:mother?.id||null,
     spouseIds:spouses.map(s=>s.id), childIds:children.map(c=>c.id)};
 
@@ -4849,6 +4921,7 @@ function buildEditPanel(pid){
       <div class="rp-field"><span class="rp-k">${zh?'英文姓名':'English Name'}</span><div class="rp-val-wrap"><input class="rp-ef" value="${p.en}" oninput="editData.en=this.value"></div></div>
       <div class="rp-field"><span class="rp-k">${zh?'性別':'Gender'}</span><div class="rp-val-wrap"><div class="rp-gbts"><button class="rp-gbt m${p.g==='m'?' on':''}" onclick="editData.g='m';this.classList.add('on');this.nextSibling.classList.remove('on');refreshEditPhotoUi()">${zh?'♂ 男':'♂ Male'}</button><button class="rp-gbt f${p.g==='f'?' on':''}" onclick="editData.g='f';this.classList.add('on');this.previousSibling.classList.remove('on');refreshEditPhotoUi()">${zh?'♀ 女':'♀ Female'}</button></div></div></div>
       <div class="rp-field"><span class="rp-k">${zh?'出生日期':'Birth'}</span><div class="rp-val-wrap"><input class="rp-ef" id="rp-edit-birth" type="text" value="${hesc(flexibleDateValue(p.birth))}" placeholder="${hesc(flexibleDatePlaceholder())}" autocomplete="off" spellcheck="false" oninput="editData.birth=this.value">${legacyDateNotice(p.birth)}</div></div>
+      <div class="rp-field"><span class="rp-k">${zh?'兄弟姊妹排序':'Sibling Rank'}</span><div class="rp-val-wrap"><input class="rp-ef" type="number" value="${hesc(p.siblingOrder||'')}" min="1" step="1" placeholder="${hesc(zh?'例如 1, 2, 3':'e.g. 1, 2, 3')}" oninput="editData.siblingOrder=this.value"></div></div>
       <div class="rp-field"><span class="rp-k">${zh?'離世日期':'Death'}</span><div class="rp-val-wrap"><input class="rp-ef" id="rp-edit-death" type="text" value="${hesc(flexibleDateValue(p.death))}" placeholder="${hesc(flexibleDatePlaceholder())}" autocomplete="off" spellcheck="false" oninput="editData.death=this.value">${legacyDateNotice(p.death)}</div></div>
       <div class="rp-field"><span class="rp-k">${zh?'電郵':'Email'}</span><div class="rp-val-wrap"><input class="rp-ef" type="email" value="${p.email||''}" oninput="editData.email=this.value"></div></div>
       <div class="rp-field"><span class="rp-k">${zh?'電話':'Phone'}</span><div class="rp-val-wrap"><input class="rp-ef" value="${p.phone||''}" oninput="editData.phone=this.value"></div></div>
@@ -4979,6 +5052,7 @@ function saveEdit(){
   p.g=editData.g||p.g;
   p.birth=normalizeEditableDate(editData.birth,editData.birthOrig);
   p.death=normalizeEditableDate(editData.death,editData.deathOrig);
+  p.siblingOrder=String(editData.siblingOrder||'').trim();
   p.email=editData.email!==undefined?editData.email:(p.email||'');
   p.phone=editData.phone!==undefined?editData.phone:(p.phone||'');
   p.oz=editData.oz!==undefined?editData.oz:p.oz;
@@ -5101,7 +5175,7 @@ function openAddModal(preselPid){
   if(!hasEditAccess()) return;
   addG='m';
   addPicks.father=null;addPicks.mother=null;addPicks.spouse=[];addPicks.child=[];
-  ['a-zh','a-en','a-birth','a-death','a-oz','a-oe'].forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});
+  ['a-zh','a-en','a-birth','a-death','a-oz','a-oe','a-sibling-order'].forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});
   ['a-email','a-phone'].forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});
   document.getElementById('add-gbt-m').classList.add('on');
   document.getElementById('add-gbt-f').classList.remove('on');
@@ -5195,6 +5269,7 @@ function submitAdd(){
   if(!zh_name&&!en_name){alert(LANG==='zh'?'請填寫姓名':'Please enter a name');return;}
   const birthValue=document.getElementById('a-birth').value.trim();
   const deathValue=document.getElementById('a-death').value.trim();
+  const siblingOrderValue=(document.getElementById('a-sibling-order').value||'').trim();
   if(!validateFlexibleDateFields([
     {label: LANG==='zh' ? '出生日期' : 'Birth', value: birthValue},
     {label: LANG==='zh' ? '離世日期' : 'Death', value: deathValue}
@@ -5208,6 +5283,7 @@ function submitAdd(){
     id:nid,zh:zh_name||en_name,en:en_name||zh_name,g:addG,
     birth:birthValue,
     death:deathValue,
+    siblingOrder:siblingOrderValue,
     email:document.getElementById('a-email').value.trim(),
     phone:document.getElementById('a-phone').value.trim(),
     oz:document.getElementById('a-oz').value.trim(),
@@ -5503,8 +5579,11 @@ function applyStaticLang(){
   const joinBtn = document.getElementById('hdr-join');
   const treeSwitchBtn = document.getElementById('hdr-tree-switch');
   const driveReloadBtn = document.getElementById('hdr-drive-reload');
+  const manualSaveBtn = document.getElementById('hdr-manual-save');
   const versionHistoryBtn = document.getElementById('hdr-version-history');
   const canUseVersionHistory = CURRENT_USER.isAuthenticated && !!TREE_META.privateTreeFileId && (CURRENT_TREE.role === 'owner' || CURRENT_TREE.role === 'editor');
+  const canUseManualSave = CURRENT_USER.isAuthenticated && hasEditAccess();
+  const driveBusyState = ['requesting_token','searching','loading','saving'].includes(driveLoadState);
 
   if (CURRENT_USER.isAuthenticated) {
     if (authBtn) authBtn.textContent = zh ? '帳戶' : 'Account';
@@ -5513,6 +5592,12 @@ function applyStaticLang(){
     if (driveReloadBtn) {
       driveReloadBtn.style.display = TREE_META.privateTreeFileId ? 'inline-flex' : 'none';
       driveReloadBtn.textContent = zh ? '從 Drive 重新載入' : 'Reload From Drive';
+    }
+    if (manualSaveBtn) {
+      manualSaveBtn.style.display = canUseManualSave ? 'inline-flex' : 'none';
+      manualSaveBtn.textContent = zh ? '手動儲存' : 'Manual Save';
+      manualSaveBtn.disabled = driveBusyState;
+      manualSaveBtn.title = zh ? '如想再確認一次，可手動儲存到 Google Drive。' : 'Use this if you want to manually save to Google Drive again.';
     }
     if (versionHistoryBtn) {
       versionHistoryBtn.style.display = canUseVersionHistory ? 'inline-flex' : 'none';
@@ -5530,6 +5615,7 @@ function applyStaticLang(){
     if (joinBtn) joinBtn.style.display = 'inline-flex';
     if (joinBtn) joinBtn.textContent = zh ? '加入' : 'Join';
     if (driveReloadBtn) driveReloadBtn.style.display = 'none';
+    if (manualSaveBtn) manualSaveBtn.style.display = 'none';
     if (versionHistoryBtn) versionHistoryBtn.style.display = 'none';
     if (treeSwitchBtn) treeSwitchBtn.style.display = 'none';
   }
@@ -5564,6 +5650,7 @@ function applyStaticLang(){
   setTxt('version-history-note', zh ? '這裡顯示同一個 private_tree.json 在最近 7 天內保留的 Drive 版本。還原後，系統會把所選版本重新儲存成目前版本。' : 'This shows retained Google Drive revisions of the same private_tree.json from the last 7 days. Restoring one will save that revision back as the current version.');
   setTxt('share-btn-txt', zh ? '分享' : 'Share'); // button hidden; label kept for safety
   setTxt('family-reminder-txt', zh ? '此家族樹主要供家族內部查看與整理。分享前請確認內容是否適合，並避免公開分享仍在世親屬的個人資料或故事。' : "This family tree is primarily intended for family use and internal collaboration. Before sharing, please review the content carefully and avoid public sharing of living relatives' personal information or stories.");
+  setTxt('sync-reminder-txt', zh ? '每次修改後，請先等候看到綠色的 Google Drive 儲存完成提示，再進行下一次編輯。' : 'After each edit, please wait for the green Google Drive saved message before making the next change.');
 
   // Member Table UI
   setTxt('pt-ti', zh ? '成員表' : 'Member Table');
@@ -5584,8 +5671,20 @@ function applyStaticLang(){
   setTxt('pt-add-en-lbl', zh ? '英文姓名' : 'English Name');
   setTxt('pt-add-g-lbl', zh ? '性別' : 'Gender');
   setTxt('pt-add-birth-lbl', zh ? '出生日期' : 'Birth Date');
+  setTxt('add-sibling-order-lbl', zh ? '兄弟姊妹排序' : 'Sibling Rank');
+  setTxt('pt-add-sibling-order-lbl', zh ? '兄弟姊妹排序' : 'Sibling Rank');
   setTxt('pt-add-submit', zh ? '✓ 確認新增' : '✓ Confirm Add');
   setTxt('pt-add-cancel', zh ? '✕ 取消' : '✕ Cancel');
+  const ptAddSiblingOrder=document.getElementById('pt-add-sibling-order');
+  if(ptAddSiblingOrder){
+    ptAddSiblingOrder.placeholder = zh ? '例如 1' : 'e.g. 1';
+    ptAddSiblingOrder.title = zh ? '當出生日期不完整時，可用來手動排列兄弟姊妹次序' : 'Use this to manually rank siblings when birth dates are incomplete.';
+  }
+  const addSiblingOrder=document.getElementById('a-sibling-order');
+  if(addSiblingOrder){
+    addSiblingOrder.placeholder = zh ? '例如 1, 2, 3' : 'e.g. 1, 2, 3';
+    addSiblingOrder.title = zh ? '當出生日期不完整時，可用來手動排列兄弟姊妹次序' : 'Use this to manually rank siblings when birth dates are incomplete.';
+  }
   ['a-birth','a-death','pt-add-birth'].forEach(id=>{
     const input=document.getElementById(id);
     if(input){
@@ -6592,6 +6691,7 @@ function initPtDraft(pid){
     birthOrig:p.birth||'',
     death:flexibleDateValue(p.death),
     deathOrig:p.death||'',
+    siblingOrder:p.siblingOrder||'',
     email:p.email||'',
     phone:p.phone||'',
     oz:p.oz||'',
@@ -6630,6 +6730,7 @@ function ptSaveRowEdit(){
   p.g=ptDraft.g||p.g;
   p.birth=normalizeEditableDate(ptDraft.birth,ptDraft.birthOrig);
   p.death=normalizeEditableDate(ptDraft.death,ptDraft.deathOrig);
+  p.siblingOrder=String(ptDraft.siblingOrder||'').trim();
   p.email=ptDraft.email.trim();
   p.phone=ptDraft.phone.trim();
   p.oz=ptDraft.oz.trim();
@@ -6741,6 +6842,7 @@ function ptToggleAddForm(){
     document.getElementById('pt-add-en').value='';
     document.getElementById('pt-add-g').value='m';
     document.getElementById('pt-add-birth').value='';
+    const ptAddSiblingOrder=document.getElementById('pt-add-sibling-order');if(ptAddSiblingOrder)ptAddSiblingOrder.value='';
     refreshFlexibleDatePickers();
     setTimeout(()=>document.getElementById('pt-add-zh').focus(),50);
   }
@@ -6755,11 +6857,12 @@ function ptAddPerson(){
   if(!validateFlexibleDateFields([
     {label: LANG==='zh' ? '出生日期' : 'Birth', value: birthValue}
   ])) return;
+  const siblingOrderValue=(document.getElementById('pt-add-sibling-order')?.value||'').trim();
   const nid=nextPersonId();
   P[nid]={id:nid,zh:zh_name||en_name,en:en_name||zh_name,
     g:document.getElementById('pt-add-g').value||'m',
     birth:birthValue,
-    death:'',email:'',phone:'',oz:'',oe:'',div:false,photo:'',sz:'',se:''};
+    death:'',siblingOrder:siblingOrderValue,email:'',phone:'',oz:'',oe:'',div:false,photo:'',sz:'',se:''};
   clearGenCache();
   takeSnapshot();
   updatePeopleCount();
@@ -6779,6 +6882,7 @@ function renderPeopleTable(){
     {zh:'中文姓名',en:'Name (ZH)',cls:'pt-zh'},    {zh:'英文姓名',en:'Name (EN)',cls:'pt-en'},
     {zh:'性別',en:'Sex',cls:'pt-sx'},
     {zh:'出生日期',en:'Birth',cls:'pt-yr'},
+    {zh:'兄弟姊妹排序',en:'Sibling Rank',cls:'pt-rk'},
     {zh:'離世日期',en:'Death',cls:'pt-yr'},
     {zh:'父親',en:'Father',cls:'pt-fm'},
     {zh:'母親',en:'Mother',cls:'pt-fm'},
@@ -6814,7 +6918,7 @@ function renderPeopleTable(){
   if(countEl)countEl.textContent=zh?`共 ${rows.length} 人`:`${rows.length} member${rows.length!==1?'s':''}`;
   const tbody=document.getElementById('pt-tbody');
   if(!tbody)return;
-  if(!rows.length){tbody.innerHTML=`<tr><td colspan="18" style="text-align:center;padding:24px;opacity:.45">${zh?'沒有結果':'No results'}</td></tr>`;return;}
+  if(!rows.length){tbody.innerHTML=`<tr><td colspan="19" style="text-align:center;padding:24px;opacity:.45">${zh?'沒有結果':'No results'}</td></tr>`;return;}
   tbody.innerHTML=rows.map(p=>{
     const gen=genOf(p.id);
     const isSel=p.id===ptSelectedId;
@@ -6825,6 +6929,7 @@ function renderPeopleTable(){
     const zhName = p.zh || '—';
     const enName = p.en || '—';
     const birthVal = p.birth || '—';
+    const siblingRankVal = p.siblingOrder || '—';
     const deathVal = p.death || '—';
     const fName = father ? (zh ? (father.zh || father.en) : (father.en || father.zh)) : '—';
     const mName = mother ? (zh ? (mother.zh || mother.en) : (mother.en || mother.zh)) : '—';
@@ -6868,6 +6973,7 @@ function renderPeopleTable(){
       <td class="pt-en">${isSel ? `<input class="pt-cell-inp" value="${hesc(draft.en)}" oninput="ptDraft.en=this.value" onclick="event.stopPropagation()">` : hesc(enName)}</td>
       <td class="pt-sx">${isSel ? `<select class="pt-cell-sel" onchange="ptDraft.g=this.value" onclick="event.stopPropagation()"><option value="m"${draft.g === 'm' ? ' selected' : ''}>${zh ? '男' : 'Male'}</option><option value="f"${draft.g === 'f' ? ' selected' : ''}>${zh ? '女' : 'Female'}</option></select>` : sexLabel}</td>
       <td class="pt-yr">${isSel ? `<input class="pt-cell-inp" id="pt-edit-birth" type="text" value="${hesc(draft.birth || '')}" placeholder="${hesc(flexibleDatePlaceholder())}" autocomplete="off" spellcheck="false" oninput="ptDraft.birth=this.value" onclick="event.stopPropagation()">` : birthVal}</td>
+      <td class="pt-rk">${isSel ? `<input class="pt-cell-inp" type="number" value="${hesc(draft.siblingOrder || '')}" min="1" step="1" placeholder="${hesc(zh?'排序':'Rank')}" oninput="ptDraft.siblingOrder=this.value" onclick="event.stopPropagation()">` : siblingRankVal}</td>
       <td class="pt-yr">${isSel ? `<input class="pt-cell-inp" id="pt-edit-death" type="text" value="${hesc(draft.death || '')}" placeholder="${hesc(flexibleDatePlaceholder())}" autocomplete="off" spellcheck="false" oninput="ptDraft.death=this.value" onclick="event.stopPropagation()">` : deathVal}</td>
       <td class="pt-fm">${isSel ? `<select class="pt-cell-sel" onchange="ptDraft.fatherId=this.value" onclick="event.stopPropagation()">${fatherOpts}</select>` : hesc(fName)}</td>
       <td class="pt-fm">${isSel ? `<select class="pt-cell-sel" onchange="ptDraft.motherId=this.value" onclick="event.stopPropagation()">${motherOpts}</select>` : hesc(mName)}</td>

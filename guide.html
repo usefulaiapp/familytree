@@ -206,7 +206,7 @@
               <li>開啟應用後，使用您的 Google 帳號點選<strong>登入</strong>。</li>
               <li>建立新的家族樹，或重新開啟您之前儲存的家族樹。</li>
               <li>加入家族成員、設定親屬關係，以及填寫基本人物資料。</li>
-              <li>按下<strong>儲存</strong>，將家族樹資料同步到您自己的 Google Drive。</li>
+              <li>目前版本會在您編輯後自動嘗試儲存到 Google Drive；如有需要，亦可使用頂部的<strong>手動儲存</strong>再次寫回。</li>
               <li>日後只要再次登入，應用便可重新開啟您已儲存的家族樹。</li>
               <li>如有需要，亦可把家族樹匯出為圖片或 PDF，方便列印或留存。</li>
             </ol>
@@ -249,8 +249,10 @@
             <ul>
               <li><strong>編輯人物：</strong>您可以在家族樹頁面或成員表中開啟人物資料並進行編輯。</li>
               <li><strong>畫面上的變更：</strong>當您儲存修改或新增親屬時，變更會先立即反映在應用畫面中。</li>
-              <li><strong>儲存行為：</strong>目前版本中，這些變更通常會盡快經由應用的儲存流程寫回，而不一定依賴另一個分離的最終提交按鈕。</li>
-              <li><strong>Drive 儲存：</strong>當 Google Drive 存取已就緒時，應用會嘗試把更新後的家族樹檔案寫回 Google Drive。若 Google API 或權杖尚未就緒，應用亦可能先保留本地狀態，再於稍後同步。</li>
+              <li><strong>自動儲存：</strong>目前版本以自動儲存為主。當 Google Drive 存取已就緒時，應用會在修改後盡快把更新後的家族樹檔案寫回 Google Drive。</li>
+              <li><strong>綠色提示：</strong>當頂部出現綠色的 <strong>✓ 已儲存到 Google Drive</strong> 提示時，表示該次修改已成功寫回 Drive。</li>
+              <li><strong>編輯節奏：</strong>如要降低多人協作時的衝突風險，建議每次修改後先等候綠色儲存完成提示，再進行下一次編輯。</li>
+              <li><strong>手動儲存：</strong>頂部的<strong>手動儲存</strong>是補充用按鈕；當您想再次確認已寫回 Drive，或網路較慢、想手動再儲存一次時，可使用此按鈕。</li>
             </ul>
 
             <h3>2. 復原與重做</h3>
@@ -265,6 +267,14 @@
               <li>此按鈕會重新讀取目前儲存在 Google Drive 的家族樹檔案。</li>
               <li>如果另一位協作者已更新內容，這個按鈕可用來取得最新 Drive 版本。</li>
               <li>它亦可協助您放棄未同步的本地變更，並以 Drive 中已儲存的版本為準。</li>
+            </ul>
+
+            <h3>4. 版本記錄</h3>
+            <ul>
+              <li>當您開啟的是 Drive-backed 家族樹，且具有擁有者或編輯者權限時，頂部亦會顯示<strong>版本記錄</strong>。</li>
+              <li>版本記錄會列出同一個 <code>private_tree.json</code> 在最近幾天內保留的 Google Drive 版本。</li>
+              <li>如果內容被誤改、多人協作時出現混亂，您可以開啟版本記錄，查看較早的版本並選擇還原。</li>
+              <li>還原後，所選版本會重新儲存成目前版本，因此還原前建議先確認您希望保留哪一個版本。</li>
             </ul>
           </div>
 
@@ -385,7 +395,7 @@
               <li>開啟應用後，使用您的 Google 帳號點選<strong>登入</strong>。</li>
               <li>建立新的家族樹，或重新開啟您之前儲存的家族樹。</li>
               <li>加入家族成員、設定親屬關係，以及填寫基本人物資料。</li>
-              <li>按下<strong>儲存</strong>，將家族樹資料同步到您自己的 Google Drive。</li>
+              <li>目前版本會在您編輯後自動嘗試儲存到 Google Drive；如有需要，亦可使用頂部的<strong>手動儲存</strong>再次寫回。</li>
               <li>日後只要再次登入，應用便可重新開啟您已儲存的家族樹。</li>
               <li>如有需要，亦可把家族樹匯出為圖片或 PDF，方便列印或留存。</li>
             </ol>
@@ -420,8 +430,10 @@
             <ul>
               <li><strong>編輯人物：</strong>您可以在家族樹頁面或成員表中開啟人物資料並進行編輯。</li>
               <li><strong>畫面上的變更：</strong>當您儲存修改或新增親屬時，變更會先立即反映在應用畫面中。</li>
-              <li><strong>儲存行為：</strong>目前版本中，這些變更通常會盡快經由應用的儲存流程寫回，而不一定依賴另一個分離的最終提交按鈕。</li>
-              <li><strong>Drive 儲存：</strong>當 Google Drive 存取已就緒時，應用會嘗試把更新後的家族樹檔案寫回 Google Drive。若 Google API 或權杖尚未就緒，應用亦可能先保留本地狀態，再於稍後同步。</li>
+              <li><strong>自動儲存：</strong>目前版本以自動儲存為主。當 Google Drive 存取已就緒時，應用會在修改後盡快把更新後的家族樹檔案寫回 Google Drive。</li>
+              <li><strong>綠色提示：</strong>當頂部出現綠色的 <strong>✓ 已儲存到 Google Drive</strong> 提示時，表示該次修改已成功寫回 Drive。</li>
+              <li><strong>編輯節奏：</strong>如要降低多人協作時的衝突風險，建議每次修改後先等候綠色儲存完成提示，再進行下一次編輯。</li>
+              <li><strong>手動儲存：</strong>頂部的<strong>手動儲存</strong>是補充用按鈕；當您想再次確認已寫回 Drive，或網路較慢、想手動再儲存一次時，可使用此按鈕。</li>
             </ul>
             <h3>2. 復原與重做</h3>
             <ul>
@@ -434,6 +446,13 @@
               <li>此按鈕會重新讀取目前儲存在 Google Drive 的家族樹檔案。</li>
               <li>如果另一位協作者已更新內容，這個按鈕可用來取得最新 Drive 版本。</li>
               <li>它亦可協助您放棄未同步的本地變更，並以 Drive 中已儲存的版本為準。</li>
+            </ul>
+            <h3>4. 版本記錄</h3>
+            <ul>
+              <li>當您開啟的是 Drive-backed 家族樹，且具有擁有者或編輯者權限時，頂部亦會顯示<strong>版本記錄</strong>。</li>
+              <li>版本記錄會列出同一個 <code>private_tree.json</code> 在最近幾天內保留的 Google Drive 版本。</li>
+              <li>如果內容被誤改、多人協作時出現混亂，您可以開啟版本記錄，查看較早的版本並選擇還原。</li>
+              <li>還原後，所選版本會重新儲存成目前版本，因此還原前建議先確認您希望保留哪一個版本。</li>
             </ul>`,
         notes_html: `<h2>注意事項</h2>
             <ul>
@@ -514,7 +533,7 @@
               <li>Open the app and click <strong>Sign in</strong> using your Google account.</li>
               <li>Create a new family tree or reopen your previously saved tree.</li>
               <li>Add family members, relationships, and basic biographical details.</li>
-              <li>Click <strong>Save</strong> to sync the tree data directly to your personal Google Drive.</li>
+              <li>The current version mainly auto-saves after you edit; if needed, you can also use the top <strong>Manual Save</strong> button to write the tree to Google Drive again.</li>
               <li>Return at any time, sign in again, and reopen your saved tree.</li>
               <li>If needed, export the family tree as an image or PDF for printing or record-keeping.</li>
             </ol>
@@ -549,8 +568,10 @@
             <ul>
               <li><strong>Edit a person:</strong> In the Family Tree view or Member Table view, open a person’s details and edit their information.</li>
               <li><strong>Changes on screen:</strong> When you save an edit or add a new relative, the change is immediately applied in the app.</li>
-              <li><strong>Save behavior:</strong> In the current app, these changes are usually pushed through the save flow quickly, rather than waiting for a separate final save button.</li>
-              <li><strong>Drive storage:</strong> When Google Drive access is available, the app attempts to save the updated tree file to Google Drive. If Google APIs or tokens are not ready, the app can still keep the updated state locally first and sync later.</li>
+              <li><strong>Auto-save:</strong> The current app mainly uses auto-save. When Google Drive access is ready, the app tries to write the updated tree back to Google Drive soon after each edit.</li>
+              <li><strong>Green confirmation:</strong> When the top banner shows the green <strong>✓ Saved to Google Drive</strong> message, that edit has been written back to Drive successfully.</li>
+              <li><strong>Edit pacing:</strong> To reduce conflicts during collaboration, it is best to wait for the green saved message before making the next edit.</li>
+              <li><strong>Manual Save:</strong> The top <strong>Manual Save</strong> button is a fallback option. Use it when you want to save again deliberately, or when the network is slow and you want to confirm the latest changes are written to Drive.</li>
             </ul>
             <h3>2. Undo and redo</h3>
             <ul>
@@ -563,6 +584,13 @@
               <li>This button reloads the current tree file from Google Drive.</li>
               <li>It is useful when you want to refresh the tree from the saved Drive version, including after another collaborator has made changes.</li>
               <li>It can also help you discard unsaved local state by reloading the stored Drive version of the tree.</li>
+            </ul>
+            <h3>4. Version History</h3>
+            <ul>
+              <li>When a Drive-backed tree is open and you have owner or editor access, the top header also shows <strong>Version History</strong>.</li>
+              <li>Version History lists recent retained Google Drive revisions of the same <code>private_tree.json</code> file.</li>
+              <li>If something was changed by mistake or collaboration becomes messy, you can open Version History, review earlier versions, and restore one.</li>
+              <li>After restoring, that selected version is saved back as the current version, so it is a good idea to confirm which version you want before restoring.</li>
             </ul>`,
         notes_html: `<h2>Important Notes</h2>
             <ul>
