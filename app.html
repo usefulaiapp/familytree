@@ -5924,6 +5924,47 @@ async function syncMemberPermissionRole(resourceFileId, storedPermissionId, memb
   return permissionId;
 }
 
+async function ensureDriveTokenForAdminShare() {
+  const existingToken = (typeof gapi !== 'undefined' && gapi.client && typeof gapi.client.getToken === 'function')
+    ? gapi.client.getToken()
+    : null;
+  if (existingToken) return true;
+  if (!tokenClient) return false;
+
+  return new Promise((resolve) => {
+    tokenClient.callback = (resp) => {
+      if (resp.error) {
+        console.warn('[Admin] Token request failed for sharing:', resp.error);
+        resolve(false);
+        return;
+      }
+      gapi.client.setToken(resp);
+      resolve(true);
+    };
+    tokenClient.requestAccessToken({ prompt: '' });
+  });
+}
+
+async function ensureMemberDrivePermission(resourceFileId, memberEmail, appRole, sendNotificationEmail = false) {
+  if (!resourceFileId || !memberEmail) return '';
+  const role = getDrivePermissionRole(appRole);
+
+  try {
+    const resp = await gapi.client.request({
+      path: `/drive/v3/files/${resourceFileId}/permissions`,
+      method: 'POST',
+      params: { sendNotificationEmail },
+      body: JSON.stringify({ role, type: 'user', emailAddress: memberEmail })
+    });
+    return resp.result?.id || '';
+  } catch (err) {
+    console.warn('[Admin] Permission create failed, checking for existing permission:', err);
+    const existingPermissionId = await findPermissionIdByEmail(resourceFileId, memberEmail);
+    if (!existingPermissionId) throw err;
+    return await syncMemberPermissionRole(resourceFileId, existingPermissionId, memberEmail, appRole);
+  }
+}
+
 async function admSaveMemberEdit(idx){
   if(!CURRENT_TREE.members||!CURRENT_TREE.members[idx]) return;
   const m=CURRENT_TREE.members[idx];
@@ -5989,7 +6030,7 @@ function admToggleAddForm(){
   }
 }
 
-function admAddMember(){
+async function admAddMember(){
   const zh=LANG==='zh';
   const email=(document.getElementById('adm-add-email').value||'').trim().toLowerCase();
   const name=(document.getElementById('adm-add-name').value||'').trim();
@@ -6004,7 +6045,7 @@ function admAddMember(){
     alert(zh?'此 Gmail 已在成員列表中':'This Gmail is already in the member list');
     return;
   }
-  // 1. Add to local JSON state
+
   const newMember = {
     gmail:email,
     displayName:name||email,
@@ -6012,69 +6053,53 @@ function admAddMember(){
     approvedAt:new Date().toISOString(),
     approvedBy:CURRENT_USER.gmail||''
   };
-  CURRENT_TREE.members.push(newMember);
-  renderAdmin();
-  
-  // 2. Automated Google Drive Sharing (if online)
-  //    Uses raw gapi.client.request() — does NOT depend on gapi.client.drive Discovery Doc.
-  //    Must ensure a Drive OAuth token exists first (session restore doesn't carry one).
-  if (TREE_META.privateTreeFileId) {
-    const doShare = async () => {
-      console.log('[Admin] Automating Google Drive permission for:', email);
-      const gRole = getDrivePermissionRole(role);
-      // Share the file
-      gapi.client.request({
-        path: `/drive/v3/files/${TREE_META.privateTreeFileId}/permissions`,
-        method: 'POST',
-        params: { sendNotificationEmail: true },
-        body: JSON.stringify({ role: gRole, type: 'user', emailAddress: email })
-      }).then(resp => {
-        console.log('[Admin] File permission granted:', resp.result);
-        newMember.drivePermissionId = resp.result.id;
-      }).catch(err => {
-        console.warn('[Admin] File sharing failed:', err);
-      });
-      // Also share the folder so the member can browse it
-      if (TREE_META.driveFolderId) {
-        gapi.client.request({
-          path: `/drive/v3/files/${TREE_META.driveFolderId}/permissions`,
-          method: 'POST',
-          params: { sendNotificationEmail: false },
-          body: JSON.stringify({ role: gRole, type: 'user', emailAddress: email })
-        }).then(resp => {
-          console.log('[Admin] Folder permission granted:', resp.result);
-          newMember.driveFolderPermissionId = resp.result.id;
-        }).catch(err => {
-          console.warn('[Admin] Folder sharing failed:', err);
-        });
-      }
-    };
 
-    // Check if we have a Drive token; if not, request one silently first
-    const existingToken = (typeof gapi !== 'undefined' && gapi.client && typeof gapi.client.getToken === 'function') ? gapi.client.getToken() : null;
-    if (existingToken) {
-      doShare().finally(() => saveAllDataToDrive());
-    } else if (tokenClient) {
-      console.log('[Admin] No Drive token — requesting one for sharing…');
-      tokenClient.callback = (resp) => {
-        if (resp.error) {
-          console.warn('[Admin] Token request failed — sharing skipped:', resp.error);
-          return;
+  if (TREE_META.privateTreeFileId) {
+    const hasShareToken = await ensureDriveTokenForAdminShare();
+    if (!hasShareToken) {
+      alert(zh ? '未能取得 Google Drive 權限，暫時無法完成邀請。' : 'Could not obtain Google Drive access, so the invite could not be completed.');
+      return;
+    }
+
+    try {
+      console.log('[Admin] Sharing Drive tree with:', email);
+      newMember.drivePermissionId = await ensureMemberDrivePermission(
+        TREE_META.privateTreeFileId,
+        email,
+        role,
+        true
+      );
+      if (TREE_META.driveFolderId) {
+        try {
+          newMember.driveFolderPermissionId = await ensureMemberDrivePermission(
+            TREE_META.driveFolderId,
+            email,
+            role,
+            false
+          );
+        } catch (folderErr) {
+          console.warn('[Admin] Folder sharing failed, but file sharing succeeded:', folderErr);
         }
-        gapi.client.setToken(resp);
-        doShare().finally(() => saveAllDataToDrive());
-      };
-      tokenClient.requestAccessToken({ prompt: '' });
-    } else {
-      console.warn('[Admin] No tokenClient — sharing skipped.');
+      }
+    } catch (shareErr) {
+      console.error('[Admin] Drive sharing failed:', shareErr);
+      alert(zh
+        ? 'Google Drive 共享失敗，這個 Gmail 尚未真正取得檔案存取權。請稍後再試。'
+        : 'Google Drive sharing failed, so this Gmail does not actually have file access yet. Please try again.');
+      return;
     }
   }
 
+  CURRENT_TREE.members.push(newMember);
+  renderAdmin();
   admToggleAddForm();
   takeSnapshot();
-  // Component-level save: persist to Drive immediately
-  persistMemberAdminChanges();
-  // Offer to email the invite
+  const saved = await persistMemberAdminChanges();
+  if (!saved && TREE_META.privateTreeFileId) {
+    alert(zh
+      ? '成員已加入目前畫面，但未能即時寫回 Drive。請稍後再儲存一次。'
+      : 'The member was added in the current view, but the tree could not be saved back to Drive yet. Please save again shortly.');
+  }
   offerEmailInvite(email, name);
 }
 
@@ -6235,11 +6260,12 @@ async function openTreeSwitcher() {
  * Switch to a different tree by its file ID.
  */
 async function switchToTree(fileId) {
-  closeOv('ov-tree-switch');
-  localStorage.setItem('family-heritage-linked-file-id', fileId);
-  driveLoadState = 'searching';
-  showDriveLoadBanner('searching');
-  await loadAllDataFromDrive({ preferredFileId: fileId });
+  if (!fileId) return;
+  ensureDriveTokenForAction(async () => {
+    closeOv('ov-tree-switch');
+    localStorage.setItem('family-heritage-linked-file-id', fileId);
+    await requestDriveTokenAndLoad({ preferredFileId: fileId });
+  });
 }
 
 async function reloadCurrentTreeFromDrive() {
