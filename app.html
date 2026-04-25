@@ -1488,7 +1488,7 @@ const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/res
 // drive.file lets the app create/update its own files and also access files
 // the user explicitly opens with Google Picker, without requesting blanket
 // read access to all of Drive.
-const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+const SCOPES = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive.readonly';
 const FONT_SIZE_STORAGE_KEY='family-font-size-mode';
 const APP_STATE_STORAGE_KEY='family-heritage-app-state';
 const LEGAL_ACK_KEY = 'family-heritage-legal-ack-v1';
@@ -2343,26 +2343,41 @@ async function requestDriveTokenAndLoad(options = {}) {
     return 'not_ready';
   }
 
-  // If we already have a valid token (e.g. user previously clicked Save), skip
-  // the consent prompt and go straight to loading.
+  // For join-link loads (shared tree from a different owner), always request a
+  // fresh token so the full scope set (drive.file + drive.readonly) is guaranteed.
+  // A cached token from a prior session may have been issued under a narrower scope.
+  // For owner / returning-user loads, reuse the existing in-session token as a
+  // fast path — they already have the full scopes from this session's sign-in.
+  const isJoinLinkLoad = !!(options.preferredFileId && options.preferredFileId !== TREE_META.privateTreeFileId);
   const existingToken = gapi.client.getToken();
-  if (existingToken) {
+  if (existingToken && !isJoinLinkLoad) {
     console.log('[Drive] Token already present — proceeding to load.');
     return loadAllDataFromDrive(options);
+  }
+  if (existingToken && isJoinLinkLoad) {
+    // Drop the cached token so requestAccessToken issues a new one with the
+    // full scope set. prompt:'' is silent when the user already consented.
+    try { gapi.client.setToken(null); } catch(e) { /* safe to ignore */ }
+    console.log('[Drive] Join-link load — clearing cached token to ensure drive.readonly scope.');
   }
 
   driveLoadState = 'requesting_token';
   showDriveLoadBanner('requesting_token');
-  console.log('[Drive] Requesting OAuth2 token for Drive (scope: drive.file)…');
+  console.log('[Drive] Requesting OAuth2 token for Drive (drive.file + drive.readonly)…');
 
   // Assign callback immediately before requesting — this is the safe pattern
   // recommended for GIS token clients where the callback must be current.
   return new Promise((resolve) => {
     tokenClient.callback = async (resp) => {
       if (resp.error !== undefined) {
-        console.warn('[Drive] Token request failed or was declined:', resp.error);
+        const errDesc = resp.error_description || '';
+        console.warn('[Drive] Token error:', resp.error, errDesc);
+        // Detect app-level OAuth restriction (app in Testing mode, user not in
+        // test users list) vs user voluntarily declining the consent screen.
+        const isAppRestricted = resp.error === 'access_denied' &&
+          (errDesc.toLowerCase().includes('blocked') || errDesc.toLowerCase().includes('not completed') || errDesc.toLowerCase().includes('hasn\'t been verified'));
         driveLoadState = 'idle';
-        showDriveLoadBanner('token_declined');
+        showDriveLoadBanner(isAppRestricted ? 'app_restricted' : 'token_declined');
         renderCurrentPage();
         resolve('token_declined');
         return;
@@ -2401,17 +2416,25 @@ function openDrivePicker() {
   const view = new google.picker.DocsView(google.picker.ViewId.DOCS);
   view.setMimeTypes('application/json');
   view.setQuery('private_tree.json');
-  view.setOwnedByMe(false); // Only show files shared with the user, hide their own
+  view.setOwnedByMe(false); // Prefer files shared with the user over their own files
+  if (typeof view.setIncludeFolders === 'function') view.setIncludeFolders(false);
+  if (typeof view.setSelectFolderEnabled === 'function') view.setSelectFolderEnabled(false);
+  if (google.picker.DocsViewMode && typeof view.setMode === 'function') {
+    view.setMode(google.picker.DocsViewMode.LIST);
+  }
 
-  const picker = new google.picker.PickerBuilder()
-    .enableFeature(google.picker.Feature.NAV_HIDDEN)
-    .enableFeature(google.picker.Feature.MULTISELECT_ENABLED)
+  const pickerBuilder = new google.picker.PickerBuilder()
     .setAppId(GOOGLE_WEB_CLIENT_ID.split('-')[0])
     .setOAuthToken(token.access_token)
     .setDeveloperKey(GOOGLE_API_KEY)
     .addView(view)
-    .setCallback(pickerCallback)
-    .build();
+    .setCallback(pickerCallback);
+
+  if (google.picker.Feature && google.picker.Feature.SUPPORT_DRIVES) {
+    pickerBuilder.enableFeature(google.picker.Feature.SUPPORT_DRIVES);
+  }
+
+  const picker = pickerBuilder.build();
   picker.setVisible(true);
 }
 
@@ -2568,7 +2591,7 @@ async function loadAllDataFromDrive(options = {}) {
         const preferredResp = await gapi.client.request({
           path: `/drive/v3/files/${preferredFileId}`,
           method: 'GET',
-          params: { fields: 'id,name,parents,modifiedTime' }
+          params: { fields: 'id,name,parents,modifiedTime', supportsAllDrives: true }
         });
         if (preferredResp.result && preferredResp.result.id) {
           treeFile = preferredResp.result;
@@ -2599,6 +2622,8 @@ async function loadAllDataFromDrive(options = {}) {
         params: {
           q: "name='private_tree.json' and mimeType='application/json' and trashed=false",
           fields: 'files(id,name,parents,modifiedTime)',
+          includeItemsFromAllDrives: true,
+          supportsAllDrives: true,
           orderBy: 'modifiedTime desc',
           pageSize: 10
         }
@@ -2633,7 +2658,7 @@ async function loadAllDataFromDrive(options = {}) {
     const fileResp = await gapi.client.request({
       path: `/drive/v3/files/${treeFile.id}`,
       method: 'GET',
-      params: { alt: 'media' }
+      params: { alt: 'media', supportsAllDrives: true }
     });
 
     const treeData = parseDriveJsonResponse(fileResp, 'private_tree.json from Drive');
@@ -2704,8 +2729,13 @@ function showDriveLoadBanner(state) {
     },
     token_declined: {
       cls: 'dsb-warn', spinner: false,
-      zh: 'Drive 存取已被拒絕，目前顯示本地資料。',
-      en: 'Google Drive access declined. Showing local data.'
+      zh: 'Google Drive 存取已被拒絕。若您是受邀成員，請確認已用正確的 Gmail 帳號登入。',
+      en: 'Google Drive access declined. If you are an invited member, make sure you signed in with the correct Gmail.'
+    },
+    app_restricted: {
+      cls: 'dsb-warn', spinner: false,
+      zh: 'Google Drive 存取被封鎖。此應用目前處於測試模式，請聯絡擁有者將您的 Gmail 加入測試名單，或等待應用正式發布。',
+      en: 'Google Drive access blocked. This app is in Testing mode — ask the owner to add your Gmail to the test users list in Google Cloud Console.'
     },
     authorization_required: {
       cls: 'dsb-warn', spinner: false,
@@ -2840,7 +2870,7 @@ async function fetchDriveFileMeta(fileId) {
   const resp = await gapi.client.request({
     path: `/drive/v3/files/${fileId}`,
     method: 'GET',
-    params: { fields: 'id,modifiedTime' }
+    params: { fields: 'id,modifiedTime', supportsAllDrives: true }
   });
   return resp.result || null;
 }
@@ -2850,7 +2880,7 @@ async function fetchDriveTreeVersion(fileId) {
   const resp = await gapi.client.request({
     path: `/drive/v3/files/${fileId}`,
     method: 'GET',
-    params: { alt: 'media' }
+    params: { alt: 'media', supportsAllDrives: true }
   });
   const treeData = parseDriveJsonResponse(resp, 'private_tree.json version');
 
@@ -2865,7 +2895,7 @@ async function fetchDriveHeadRevisionId(fileId) {
   const resp = await gapi.client.request({
     path: `/drive/v3/files/${fileId}`,
     method: 'GET',
-    params: { fields: 'headRevisionId' }
+    params: { fields: 'headRevisionId', supportsAllDrives: true }
   });
   return resp.result?.headRevisionId || '';
 }
@@ -2877,6 +2907,7 @@ async function listDriveRevisions(fileId) {
     method: 'GET',
     params: {
       pageSize: 100,
+      supportsAllDrives: true,
       fields: 'revisions(id,modifiedTime,keepForever,lastModifyingUser(displayName,emailAddress)),nextPageToken'
     }
   });
@@ -3076,7 +3107,7 @@ async function fetchDriveRevisionTree(fileId, revisionId) {
   const resp = await gapi.client.request({
     path: `/drive/v3/files/${fileId}/revisions/${revisionId}`,
     method: 'GET',
-    params: { alt: 'media' }
+    params: { alt: 'media', supportsAllDrives: true }
   });
   return parseDriveJsonResponse(resp, 'Drive revision');
 }
@@ -5863,17 +5894,25 @@ function renderAdmin(){
           <button class="adm-rm-btn" onclick="admCancelEdit()" title="${zh?'取消':'Cancel'}">✕</button>`;
       } else {
         actionBtns=`<button class="adm-rm-btn" onclick="admStartEdit(${idx})" title="${zh?'編輯':'Edit'}" style="background:transparent;color:var(--gold);border-color:var(--gold)">✎</button>`;
+        if(!isImmutableOwner && TREE_META.privateTreeFileId){
+          actionBtns+=`<button class="adm-rm-btn" onclick="admRepairShare(${idx})" title="${zh?'重新同步 Drive 共享':'Repair Drive sharing'}">⟳</button>`;
+        }
         if(!isSelf && !isImmutableOwner){
           actionBtns+=`<button class="adm-rm-btn" onclick="admRemoveMember(${idx})" title="${zh?'移除':'Remove'}">✕</button>`;
         }
       }
     }
 
+    // Warn if Drive permission was never set (member can't access the file)
+    const noPermWarn = isOwner && TREE_META.privateTreeFileId && !m.drivePermissionId && normalizedRole !== 'owner'
+      ? `<span title="${zh?'此成員可能未取得 Google Drive 檔案存取權，建議重新加入以修復。':'This member may not have Google Drive file access. Try re-adding them to repair.'}" style="font-size:11px;color:#c07878;cursor:help">⚠️</span>`
+      : '';
+
     return `<div class="adm-card"${isEditing?' style="border-color:var(--gold);box-shadow:0 0 0 2px rgba(184,146,58,0.13)"':''}>
       <div class="adm-avatar">${initials}</div>
       <div class="adm-info">
         <div class="adm-name">${nameHtml}</div>
-        <div class="adm-email">${m.gmail||''}</div>
+        <div class="adm-email">${m.gmail||''} ${noPermWarn}</div>
       </div>
       ${roleHtml}
       <div style="display:flex;gap:6px;align-items:center">${actionBtns}</div>
@@ -5904,7 +5943,7 @@ async function findPermissionIdByEmail(fileId, email) {
     const resp = await gapi.client.request({
       path: `/drive/v3/files/${fileId}/permissions`,
       method: 'GET',
-      params: { fields: 'permissions(id,emailAddress)' }
+      params: { fields: 'permissions(id,emailAddress)', supportsAllDrives: true }
     });
     const permissions = (resp.result && resp.result.permissions) ? resp.result.permissions : [];
     const match = permissions.find(p => (p.emailAddress || '').toLowerCase() === email.toLowerCase());
@@ -5926,7 +5965,8 @@ async function syncMemberPermissionRole(resourceFileId, storedPermissionId, memb
   await gapi.client.request({
     path: `/drive/v3/files/${resourceFileId}/permissions/${permissionId}`,
     method: 'PATCH',
-    body: JSON.stringify({ role: getDrivePermissionRole(appRole) })
+    params: { supportsAllDrives: true, fields: 'id,emailAddress,role' },
+    body: { role: getDrivePermissionRole(appRole) }
   });
   return permissionId;
 }
@@ -5960,10 +6000,14 @@ async function ensureMemberDrivePermission(resourceFileId, memberEmail, appRole,
     const resp = await gapi.client.request({
       path: `/drive/v3/files/${resourceFileId}/permissions`,
       method: 'POST',
-      params: { sendNotificationEmail },
-      body: JSON.stringify({ role, type: 'user', emailAddress: memberEmail })
+      params: { sendNotificationEmail, supportsAllDrives: true, fields: 'id,emailAddress,role' },
+      body: { role, type: 'user', emailAddress: memberEmail }
     });
-    return resp.result?.id || '';
+    const permissionId = resp.result?.id || await findPermissionIdByEmail(resourceFileId, memberEmail);
+    if (!permissionId) {
+      throw new Error('Permission create returned no permission id.');
+    }
+    return permissionId;
   } catch (err) {
     console.warn('[Admin] Permission create failed, checking for existing permission:', err);
     const existingPermissionId = await findPermissionIdByEmail(resourceFileId, memberEmail);
@@ -5993,6 +6037,37 @@ async function ensureMemberTreeAccess(member, sendNotificationEmail = true) {
     }
   }
   return member;
+}
+
+async function admRepairShare(idx) {
+  const zh = LANG === 'zh';
+  if (!CURRENT_TREE.members || !CURRENT_TREE.members[idx]) return;
+  const member = CURRENT_TREE.members[idx];
+  if (!TREE_META.privateTreeFileId) {
+    alert(zh ? '目前沒有可重新同步的 Drive 檔案。' : 'There is no Drive file to repair right now.');
+    return;
+  }
+
+  const hasShareToken = await ensureDriveTokenForAdminShare();
+  if (!hasShareToken) {
+    alert(zh ? '未能取得 Google Drive 權限，暫時無法修復共享。' : 'Could not obtain Google Drive access to repair sharing.');
+    return;
+  }
+
+  try {
+    await ensureMemberTreeAccess(member, true);
+    member.drivePermissionId = member.drivePermissionId || await findPermissionIdByEmail(TREE_META.privateTreeFileId, member.gmail);
+    renderAdmin();
+    const saved = await persistMemberAdminChanges();
+    if (!saved) {
+      alert(zh ? 'Drive 共享已重新套用，但未能即時寫回樹記錄。請稍後再試。' : 'Drive sharing was refreshed, but the tree record could not be saved back yet. Please try again shortly.');
+      return;
+    }
+    alert(zh ? '已重新同步此成員的 Drive 共享權限。' : 'Drive sharing permissions were refreshed for this member.');
+  } catch (err) {
+    console.error('[Admin] Failed to repair member share:', err);
+    alert(zh ? '重新同步 Drive 共享失敗。請稍後再試。' : 'Failed to repair Drive sharing. Please try again.');
+  }
 }
 
 async function admSaveMemberEdit(idx){
@@ -6351,7 +6426,8 @@ async function admRemoveMember(idx){
     try {
       await gapi.client.request({
         path: `/drive/v3/files/${TREE_META.privateTreeFileId}/permissions/${filePermissionId}`,
-        method: 'DELETE'
+        method: 'DELETE',
+        params: { supportsAllDrives: true }
       });
     } catch (e) {
       console.warn('[Admin] File permission revocation failed:', e);
@@ -6362,7 +6438,8 @@ async function admRemoveMember(idx){
     try {
       await gapi.client.request({
         path: `/drive/v3/files/${TREE_META.driveFolderId}/permissions/${folderPermissionId}`,
-        method: 'DELETE'
+        method: 'DELETE',
+        params: { supportsAllDrives: true }
       });
     } catch (e) {
       console.warn('[Admin] Folder permission revocation failed:', e);
