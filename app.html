@@ -3189,14 +3189,13 @@ async function executeDriveSave() {
       const latestLastEditedAt = latestTreeVersion?.lastEditedAt || '';
       const loadedLastEditedAt = TREE_META.privateTreeLastEditedAt || '';
       if (
-        latestMeta &&
-        latestMeta.modifiedTime &&
-        TREE_META.privateTreeModifiedTime &&
-        latestMeta.modifiedTime !== TREE_META.privateTreeModifiedTime
+        latestLastEditedAt &&
+        loadedLastEditedAt &&
+        latestLastEditedAt !== loadedLastEditedAt
       ) {
-        console.warn('[Drive] Save blocked due to concurrent update (modifiedTime).', {
-          loadedModifiedTime: TREE_META.privateTreeModifiedTime,
-          latestModifiedTime: latestMeta.modifiedTime
+        console.warn('[Drive] Save blocked due to concurrent update (lastEditedAt).', {
+          loadedLastEditedAt,
+          latestLastEditedAt
         });
         showDriveLoadBanner('conflict');
         alert(zh
@@ -3204,12 +3203,20 @@ async function executeDriveSave() {
           : 'This family tree was just updated by someone else. Please reload from Drive, reapply your changes, and save again.');
         return false;
       }
+      // Fall back to Drive modifiedTime only when the tree JSON does not yet
+      // have a trustworthy lastEditedAt marker to compare. This avoids false
+      // conflicts from permission/sharing metadata changes that can bump the
+      // Drive file modifiedTime without changing the tree content itself.
       if (
-        latestLastEditedAt &&
-        loadedLastEditedAt &&
-        latestLastEditedAt !== loadedLastEditedAt
+        (!latestLastEditedAt || !loadedLastEditedAt) &&
+        latestMeta &&
+        latestMeta.modifiedTime &&
+        TREE_META.privateTreeModifiedTime &&
+        latestMeta.modifiedTime !== TREE_META.privateTreeModifiedTime
       ) {
-        console.warn('[Drive] Save blocked due to concurrent update (lastEditedAt).', {
+        console.warn('[Drive] Save blocked due to concurrent update (modifiedTime fallback).', {
+          loadedModifiedTime: TREE_META.privateTreeModifiedTime,
+          latestModifiedTime: latestMeta.modifiedTime,
           loadedLastEditedAt,
           latestLastEditedAt
         });
@@ -5965,6 +5972,29 @@ async function ensureMemberDrivePermission(resourceFileId, memberEmail, appRole,
   }
 }
 
+async function ensureMemberTreeAccess(member, sendNotificationEmail = true) {
+  if (!member || !member.gmail || !TREE_META.privateTreeFileId) return member;
+  member.drivePermissionId = await ensureMemberDrivePermission(
+    TREE_META.privateTreeFileId,
+    member.gmail,
+    member.role,
+    sendNotificationEmail
+  );
+  if (TREE_META.driveFolderId) {
+    try {
+      member.driveFolderPermissionId = await ensureMemberDrivePermission(
+        TREE_META.driveFolderId,
+        member.gmail,
+        member.role,
+        false
+      );
+    } catch (folderErr) {
+      console.warn('[Admin] Folder sharing failed, but file sharing succeeded:', folderErr);
+    }
+  }
+  return member;
+}
+
 async function admSaveMemberEdit(idx){
   if(!CURRENT_TREE.members||!CURRENT_TREE.members[idx]) return;
   const m=CURRENT_TREE.members[idx];
@@ -6042,6 +6072,33 @@ async function admAddMember(){
   if(!CURRENT_TREE.members) CURRENT_TREE.members=[];
   const exists=CURRENT_TREE.members.find(m=>(m.gmail||'').toLowerCase()===email);
   if(exists){
+    if (name) exists.displayName = name;
+    exists.role = role;
+
+    if (TREE_META.privateTreeFileId) {
+      const hasShareToken = await ensureDriveTokenForAdminShare();
+      if (!hasShareToken) {
+        alert(zh ? '此 Gmail 已在成員列表中，但未能取得 Google Drive 權限來修復共享。' : 'This Gmail is already in the member list, but Google Drive access was not available to repair sharing.');
+        return;
+      }
+      try {
+        await ensureMemberTreeAccess(exists, true);
+        renderAdmin();
+        const saved = await persistMemberAdminChanges();
+        if (!saved) {
+          alert(zh
+            ? '已重新套用共享權限，但未能即時寫回 Drive 記錄。請稍後再試。'
+            : 'Sharing permissions were refreshed, but the tree record could not be saved back to Drive yet. Please try again shortly.');
+          return;
+        }
+        alert(zh ? '此成員已在列表中，已重新套用 Google Drive 共享權限。' : 'This member was already in the list. Google Drive sharing permissions have been refreshed.');
+      } catch (repairErr) {
+        console.error('[Admin] Existing member share repair failed:', repairErr);
+        alert(zh ? '此 Gmail 已在成員列表中，但 Google Drive 共享修復失敗。' : 'This Gmail is already in the member list, but repairing Google Drive sharing failed.');
+      }
+      return;
+    }
+
     alert(zh?'此 Gmail 已在成員列表中':'This Gmail is already in the member list');
     return;
   }
@@ -6063,24 +6120,7 @@ async function admAddMember(){
 
     try {
       console.log('[Admin] Sharing Drive tree with:', email);
-      newMember.drivePermissionId = await ensureMemberDrivePermission(
-        TREE_META.privateTreeFileId,
-        email,
-        role,
-        true
-      );
-      if (TREE_META.driveFolderId) {
-        try {
-          newMember.driveFolderPermissionId = await ensureMemberDrivePermission(
-            TREE_META.driveFolderId,
-            email,
-            role,
-            false
-          );
-        } catch (folderErr) {
-          console.warn('[Admin] Folder sharing failed, but file sharing succeeded:', folderErr);
-        }
-      }
+      await ensureMemberTreeAccess(newMember, true);
     } catch (shareErr) {
       console.error('[Admin] Drive sharing failed:', shareErr);
       alert(zh
