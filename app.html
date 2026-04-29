@@ -1857,6 +1857,7 @@ function adaptUnion(ju){
     a:ju.partnerA||ju.a||'',
     b:ju.partnerB!=null?ju.partnerB:(ju.b||''),
     ch:(ju.children||ju.ch||[]).slice(),
+    order: ju.order!=null ? Number(ju.order) : null,
     ended:!!(ju.ended),
     started: ju.started || '',
     endedReason: ju.endedReason || ''
@@ -1962,6 +1963,7 @@ function exportUnionToJson(u) {
     partnerA: u.a, 
     partnerB: u.b, 
     children: (u.ch || []).slice(), 
+    order: Number.isFinite(Number(u.order)) ? Number(u.order) : undefined,
     ended: !!u.ended,
     started: u.started || "",
     endedReason: u.endedReason || ""
@@ -3582,13 +3584,19 @@ function buildTreeExportSvg() {
     }
     if (!COL[u.id] && u.ch.length) {
       const dropY = meta.dropY;
-      addLine(meta.localAnchorX, uy, meta.localAnchorX, dropY, theme.ink, 1.5);
-      if (Math.abs(meta.childCenterX - meta.localAnchorX) > 0.5) addLine(meta.localAnchorX, dropY, meta.childCenterX, dropY, theme.ink, 1.5);
       const kids = unionChildrenOf(u);
       const cxs = kids.map(c => POS[c]).filter(Boolean).map(p => p.x + CW / 2);
       if (cxs.length) {
-        const allXs = [...cxs, meta.childCenterX];
-        if (cxs.length > 1 || Math.abs(meta.childCenterX - cxs[0]) > 0.5) addLine(Math.min(...allXs), dropY, Math.max(...allXs), dropY, theme.ink, 1.5);
+        // Vertical drop from the couple connector
+        addLine(meta.localAnchorX, uy, meta.localAnchorX, dropY, theme.ink, 1.5);
+        // Sibling bar spans only actual child card positions — never bleeds into a
+        // neighbouring union's territory (fixes the "connected" visual between unions).
+        const barL = Math.min(...cxs), barR = Math.max(...cxs);
+        // Clamp the horizontal jog end-point within the bar so we don't overshoot
+        const joinX = Math.max(barL, Math.min(barR, meta.localAnchorX));
+        if (Math.abs(joinX - meta.localAnchorX) > 0.5) addLine(meta.localAnchorX, dropY, joinX, dropY, theme.ink, 1.5);
+        if (cxs.length > 1) addLine(barL, dropY, barR, dropY, theme.ink, 1.5);
+        else if (Math.abs(joinX - cxs[0]) > 0.5) addLine(joinX, dropY, cxs[0], dropY, theme.ink, 1.5);
         for (const c of kids) {
           const cp = POS[c];
           if (cp) addLine(cp.x + CW / 2, dropY, cp.x + CW / 2, cp.y, theme.ink, 1.5);
@@ -3860,8 +3868,12 @@ function nextUnionId(){
 // each placed person lays out their spouse unions in stable sorted order, and
 // each union records its own couple anchor, child anchor, and subtree bounds.
 // ═══════════════════════════════════════════════════════════
-const CW_NORMAL=140,CW_PHOTO=200,CH=82,SG=30,SIBG=24,GH=172;
-let CW=CW_NORMAL;
+const CW_NORMAL_DEFAULT=140,CW_NORMAL_MEDIUM=128,CW_NORMAL_COMPACT=116;
+const CW_PHOTO_DEFAULT=200,CW_PHOTO_MEDIUM=184,CW_PHOTO_COMPACT=168;
+const CH=82;
+const SG_DEFAULT=30,SIBG_DEFAULT=24,GH_DEFAULT=172,ROOT_START_X_DEFAULT=80,ROOT_START_Y_DEFAULT=70,ROOT_GAP_DEFAULT=48,DROP_BASE_DEFAULT=88,SIBLING_COUPLE_GAP_DEFAULT=8;
+let SG=SG_DEFAULT,SIBG=SIBG_DEFAULT,GH=GH_DEFAULT,ROOT_START_X=ROOT_START_X_DEFAULT,ROOT_START_Y=ROOT_START_Y_DEFAULT,ROOT_GAP=ROOT_GAP_DEFAULT;
+let CW=CW_NORMAL_DEFAULT;
 const COL={};
 let POS={};
 let UNION_META={};
@@ -3889,28 +3901,35 @@ function birthKey(pid){
 function comparePeople(a,b){
   return birthKey(a).localeCompare(birthKey(b))||personLabel(a).localeCompare(personLabel(b),'zh-Hant');
 }
-function compareSiblingPeople(a,b){
-  const aBirth=(P[a]?.birth||'').trim();
-  const bBirth=(P[b]?.birth||'').trim();
-  if(aBirth && bBirth){
-    return comparePeople(a,b);
-  }
-  const aRank=siblingOrderKey(a), bRank=siblingOrderKey(b);
-  if(aRank || bRank){
-    if(aRank && !bRank) return -1;
-    if(!aRank && bRank) return 1;
-    if(aRank !== bRank) return aRank.localeCompare(bRank);
-  }
-  return comparePeople(a,b);
-}
 function partnerOf(u,pid){
   return u.a===pid?u.b:(u.b===pid?u.a:null);
 }
 function unionChildrenOf(u){
-  return [...u.ch].filter(cid=>P[cid]).sort(compareSiblingPeople);
+  const validKids = [...u.ch].filter(cid=>P[cid]);
+  const origOrder = new Map(validKids.map((c,i)=>[c,i]));
+  return validKids.sort((a,b)=>{
+    const aBirth=(P[a]?.birth||'').trim();
+    const bBirth=(P[b]?.birth||'').trim();
+    if(aBirth && bBirth) return comparePeople(a,b);
+    
+    const aRank=siblingOrderKey(a), bRank=siblingOrderKey(b);
+    if(aRank || bRank){
+      if(aRank && !bRank) return -1;
+      if(!aRank && bRank) return 1;
+      if(aRank !== bRank) return aRank.localeCompare(bRank);
+    }
+    
+    if(aBirth && !bBirth) return -1;
+    if(!aBirth && bBirth) return 1;
+    
+    return origOrder.get(a) - origOrder.get(b);
+  });
 }
 function layoutUnionsOf(pid){
   return spouseUnionsOf(pid).slice().sort((ua,ub)=>{
+    const oa = Number.isFinite(Number(ua.order)) ? Number(ua.order) : Number.MAX_SAFE_INTEGER;
+    const ob = Number.isFinite(Number(ub.order)) ? Number(ub.order) : Number.MAX_SAFE_INTEGER;
+    if(oa !== ob) return oa - ob;
     const pa=partnerOf(ua,pid)||'',pb=partnerOf(ub,pid)||'';
     return comparePeople(pa,pb)||ua.id.localeCompare(ub.id);
   });
@@ -3926,6 +3945,65 @@ function maxDepth(pid, seen=new Set()){
     }
   }
   return best;
+}
+function visibleDepth(pid, seen=new Set()){
+  if(seen.has(pid)||!P[pid]) return 1;
+  seen.add(pid);
+  let best=1;
+  for(const u of spouseUnionsOf(pid)){
+    if(COL[u.id]) continue;
+    for(const cid of u.ch){
+      if(!P[cid]) continue;
+      best=Math.max(best,1+visibleDepth(cid,new Set(seen)));
+    }
+  }
+  return best;
+}
+function currentVisibleTreeDepth(){
+  const anchors=rootAnchors();
+  if(!anchors.length) return 1;
+  return Math.max(...anchors.map(pid=>visibleDepth(pid)));
+}
+function setActiveCardWidth(level){
+  if(level==='compact'){
+    CW = SHOW_CARD_PHOTO ? CW_PHOTO_COMPACT : CW_NORMAL_COMPACT;
+    return;
+  }
+  if(level==='medium'){
+    CW = SHOW_CARD_PHOTO ? CW_PHOTO_MEDIUM : CW_NORMAL_MEDIUM;
+    return;
+  }
+  CW = SHOW_CARD_PHOTO ? CW_PHOTO_DEFAULT : CW_NORMAL_DEFAULT;
+}
+function updateLayoutDensity(){
+  const depth=currentVisibleTreeDepth();
+  if(depth<=4){
+    setActiveCardWidth('compact');
+    SG=18;
+    SIBG=8;
+    GH=GH_DEFAULT;
+    ROOT_START_X=44;
+    ROOT_START_Y=44;
+    ROOT_GAP=14;
+    return;
+  }
+  if(depth<=5){
+    setActiveCardWidth('medium');
+    SG=22;
+    SIBG=12;
+    GH=GH_DEFAULT;
+    ROOT_START_X=58;
+    ROOT_START_Y=54;
+    ROOT_GAP=24;
+    return;
+  }
+  setActiveCardWidth('default');
+  SG=SG_DEFAULT;
+  SIBG=SIBG_DEFAULT;
+  GH=GH_DEFAULT;
+  ROOT_START_X=ROOT_START_X_DEFAULT;
+  ROOT_START_Y=ROOT_START_Y_DEFAULT;
+  ROOT_GAP=ROOT_GAP_DEFAULT;
 }
 function rootAnchors(){
   const allIds=Object.keys(P).sort(comparePeople);
@@ -3965,13 +4043,46 @@ function rootAnchors(){
 // ── MEASURE ──────────────────────────────────────────────
 let _mW={};
 
+function siblingBranchGapAfter(pid){
+  const unions=layoutUnionsOf(pid);
+  for(const u of unions){
+    const sid=partnerOf(u,pid);
+    if(sid&&P[sid]) return SIBLING_COUPLE_GAP_DEFAULT;
+  }
+  return 0;
+}
+
+function siblingGapBetween(leftPid,rightPid){
+  // Add the couple-breathing extra gap whenever either neighbour is a couple,
+  // so the gap reads as a boundary between the two branches rather than as
+  // trailing space on the rightmost card of a couple (e.g. a female anchor
+  // after the f+m positional swap).
+  const extra = (siblingBranchGapAfter(leftPid) || siblingBranchGapAfter(rightPid))
+    ? SIBLING_COUPLE_GAP_DEFAULT : 0;
+  return SIBG + extra;
+}
+
+function measureChildRowWidth(kids){
+  if(!kids.length) return 0;
+  let total=0;
+  kids.forEach((cid,i)=>{
+    total+=measurePerson(cid);
+    if(i<kids.length-1) total+=siblingGapBetween(cid,kids[i+1]);
+  });
+  return total;
+}
+
 function measureUnion(uid, ownerPid){
   const key='u:'+uid+':'+ownerPid;
   if(_mW[key]!==undefined) return _mW[key];
   const u=U.find(x=>x.id===uid);
   if(!u){ _mW[key]=CW; return CW; }
+  if(COL[u.id]){
+    _mW[key]=CW;
+    return CW;
+  }
   const kids=unionChildrenOf(u);
-  const kidsW=kids.length ? kids.reduce((acc,cid,i)=>acc+measurePerson(cid)+(i?SIBG:0),0) : 0;
+  const kidsW=measureChildRowWidth(kids);
   const slotW=Math.max(CW,kidsW||CW);
   _mW[key]=slotW;
   return slotW;
@@ -3981,19 +4092,251 @@ function measurePerson(pid){
   if(_mW['p:'+pid]!==undefined) return _mW['p:'+pid];
   const myUnions=layoutUnionsOf(pid);
   if(!myUnions.length){ _mW['p:'+pid]=CW; return CW; }
-  let w=CW;
-  myUnions.forEach((u,i)=>{
-    w+=SG+measureUnion(u.id,pid);
-    if(i<myUnions.length-1) w+=SIBG;
+
+  // Single union: anchor card on the left, one union slot to the right.
+  if(myUnions.length===1){
+    const w=CW+SG+measureUnion(myUnions[0].id,pid);
+    _mW['p:'+pid]=w; return w;
+  }
+
+  // Multiple unions: split the list in half.
+  // First ceil(N/2) unions go to the RIGHT of the anchor card,
+  // remaining floor(N/2) unions go to the LEFT.
+  // This keeps the anchor near the visual centre of all its children
+  // instead of pushing it to the far left of a one-directional strip.
+  const nRight=Math.ceil(myUnions.length/2);
+  let rightW=0;
+  myUnions.slice(0,nRight).forEach((u,i,arr)=>{
+    rightW+=SG+measureUnion(u.id,pid);
+    if(i<arr.length-1) rightW+=SIBG;
   });
+  let leftW=0;
+  myUnions.slice(nRight).forEach((u,i,arr)=>{
+    leftW+=SG+measureUnion(u.id,pid);
+    if(i<arr.length-1) leftW+=SIBG;
+  });
+  const w=leftW+CW+rightW;
   _mW['p:'+pid]=w; return w;
 }
 
 // ── PLACE ────────────────────────────────────────────────
+
+// Shared helper: place the children of one union slot and update UNION_META.
+// Works for both left-side and right-side slots — the childCenterX passed in
+// already points to the correct horizontal centre for this slot's children.
+function _placeUnionChildren(u, pid, childCenterX, y, dropYOffset=0){
+  if(COL[u.id]||!u.ch.length) return;
+  const kids=unionChildrenOf(u);
+  const childTotalW=measureChildRowWidth(kids);
+  const extraKids=Math.max(0,kids.length-2);
+  const spanBeyondPair=Math.max(0,childTotalW-(CW*2+SIBG));
+  const childRowExtra=34+Math.min(42,extraKids*9+spanBeyondPair*0.03);
+  const childY=y+GH+childRowExtra+dropYOffset;
+  const extraDrop=Math.min(24,8+extraKids*3+spanBeyondPair*0.015);
+  UNION_META[u.id].dropYOffset=dropYOffset;
+  UNION_META[u.id].dropY=Math.min(childY-8,y+CH+DROP_BASE_DEFAULT+extraDrop+dropYOffset);
+  let childCurX=childCenterX-childTotalW/2;
+  kids.forEach((cid,i)=>{
+    const cw=measurePerson(cid);
+    placePerson(cid,childCurX+cw/2,childY);
+    if(i<kids.length-1) childCurX+=cw+siblingGapBetween(cid,kids[i+1]);
+  });
+  separateSiblingSubtrees(kids,childCenterX);
+  // Refresh child-group centre so connector jogs aim at the final subtree span.
+  const fb=kids.map(cid=>subtreeBounds(cid)).filter(b=>b.left!==Infinity&&b.right!==-Infinity);
+  if(fb.length){
+    UNION_META[u.id].childCenterX=(Math.min(...fb.map(b=>b.left))+Math.max(...fb.map(b=>b.right)))/2;
+  }
+}
+
 function placePerson(pid, cx, y){
-  if(POS[pid]) return;
+  if(POS[pid]){
+    // Person was already placed as a spouse by another union's placePerson call.
+    // Check whether any of their own unions are still unprocessed and handle them now,
+    // so we don't end up with a long gold line across the generation.
+    const myUnions=layoutUnionsOf(pid);
+    const todo=myUnions.filter(u=>!UNION_META[u.id]);
+    if(!todo.length) return;
+    const anchorX=POS[pid].x;
+    const anchorY=POS[pid].y;
+    // Place any unprocessed unions to the RIGHT of the anchor card.
+    let slotStart=anchorX+CW;
+    // (skip past any already-placed right-side unions to avoid overlap)
+    for(const u of myUnions){
+      if(!UNION_META[u.id]) continue;
+      const m=UNION_META[u.id];
+      if(m.slotStart>=anchorX+CW && m.right>slotStart) slotStart=m.right+SIBG;
+    }
+    let offsetIndex = myUnions.length - todo.length;
+    for(const u of todo){
+      const slotW=measureUnion(u.id,pid);
+      const sid=partnerOf(u,pid);
+      if(sid&&P[sid]&&!POS[sid]) POS[sid]={x:slotStart+SG,y:anchorY};
+      const localAnchorX=slotStart+SG/2;
+      const coupleMidX=(anchorX+CW/2)+(sid&&POS[sid]?((POS[sid].x+CW/2)-(anchorX+CW/2))/2:0);
+      const childCenterX=slotStart+SG+slotW/2;
+      UNION_META[u.id]={
+        left:slotStart,right:slotStart+SG+slotW,
+        localAnchorX,coupleMidX,childCenterX,
+        spouseY:anchorY+CH/2,dropY:anchorY+CH+DROP_BASE_DEFAULT+(offsetIndex*14),
+        spouseCount: myUnions.length,
+        bracketYOffset: offsetIndex * 8,
+        anchorPid:pid,spouseId:sid||'',slotStart
+      };
+      _placeUnionChildren(u,pid,childCenterX,anchorY, offsetIndex*14);
+      offsetIndex++;
+      slotStart+=SG+slotW+SIBG;
+    }
+    return;
+  }
   const myUnions=layoutUnionsOf(pid);
   const totalW=measurePerson(pid);
+
+  // ── Multi-union path ────────────────────────────────────────────────────
+  // Split 2+ spouse unions around the anchor.
+  if(myUnions.length>1){
+    const nRight = Math.ceil(myUnions.length/2);
+    const rightUnions = myUnions.slice(0, nRight);
+    const leftUnions = myUnions.slice(nRight);
+    const visualUnions = [...leftUnions].reverse().concat(rightUnions);
+
+    const unionSlotWs = new Map();
+    visualUnions.forEach((u) => {
+      unionSlotWs.set(u.id, measureUnion(u.id, pid));
+    });
+
+    const anchorX = cx - CW / 2;
+    const anchorCenter = anchorX + CW / 2;
+    POS[pid] = {x: anchorX, y};
+
+    // 1. Place spouses tightly around the anchor
+    let simRightSpouseX = anchorX + CW + SG;
+    let simLeftSpouseX = anchorX - SG - CW;
+    let blocks = visualUnions.map(u => {
+      const sid = partnerOf(u, pid);
+      const isRight = rightUnions.includes(u);
+      let spouseX;
+      if (sid && P[sid] && !POS[sid]) {
+         spouseX = isRight ? simRightSpouseX : simLeftSpouseX;
+         POS[sid] = {x: spouseX, y};
+      } else if (sid && POS[sid]) {
+         spouseX = POS[sid].x;
+      } else {
+         spouseX = isRight ? simRightSpouseX : simLeftSpouseX;
+      }
+      
+      if (isRight) simRightSpouseX = spouseX + CW + SG;
+      else simLeftSpouseX = spouseX - CW - SG;
+
+      const coupleMidX = (anchorX + CW/2) + (spouseX + CW/2 - (anchorX + CW/2)) / 2;
+      return { u, isRight, spouseX, coupleMidX, w: unionSlotWs.get(u.id), x: coupleMidX };
+    });
+
+    // Assign dropYOffsets dynamically based on children block width (Umbrella Rule).
+    // The widest families get the lowest horizontal lines, allowing them to stretch under smaller families without crossing lines.
+    const sortedBlocks = [...blocks].sort((a, b) => a.w - b.w);
+    sortedBlocks.forEach((b, i) => {
+        b.dropYOffset = i * 14;
+    });
+
+    // 2. Resolve overlaps & boundaries symmetrically so children stay under their respective parents
+    let resolved = false;
+    for (let iter = 0; iter < 100 && !resolved; iter++) {
+      resolved = true;
+      for (let i = 0; i < blocks.length - 1; i++) {
+        const b1 = blocks[i];
+        const b2 = blocks[i+1];
+        if (b1.dropYOffset < b2.dropYOffset) {
+           const maxRight = b2.coupleMidX - SIBG;
+           if (b1.x + b1.w/2 > maxRight) { b1.x = maxRight - b1.w/2; resolved = false; }
+        } else if (b1.dropYOffset > b2.dropYOffset) {
+           const minLeft = b1.coupleMidX + SIBG;
+           if (b2.x - b2.w/2 < minLeft) { b2.x = minLeft + b2.w/2; resolved = false; }
+        } else {
+           const maxRight = b2.coupleMidX - SIBG;
+           if (b1.x + b1.w/2 > maxRight) { b1.x = maxRight - b1.w/2; resolved = false; }
+           const minLeft = b1.coupleMidX + SIBG;
+           if (b2.x - b2.w/2 < minLeft) { b2.x = minLeft + b2.w/2; resolved = false; }
+        }
+      }
+      for (let i = 0; i < blocks.length - 1; i++) {
+        const b1 = blocks[i];
+        const b2 = blocks[i+1];
+        const minGap = b1.w / 2 + SIBG + b2.w / 2;
+        const actualGap = b2.x - b1.x;
+        if (actualGap < minGap) {
+          resolved = false;
+          const overlap = minGap - actualGap;
+          b1.x -= overlap / 2;
+          b2.x += overlap / 2;
+        }
+      }
+
+      // Global Centering Force: Tightly pack everything while keeping the Anchor centered.
+      let minX = blocks[0].x - blocks[0].w / 2;
+      let maxX = blocks[blocks.length - 1].x + blocks[blocks.length - 1].w / 2;
+      let childrenCenter = (minX + maxX) / 2;
+      let shift = anchorCenter - childrenCenter;
+      if (Math.abs(shift) > 1) {
+          blocks.forEach(b => b.x += shift);
+          resolved = false;
+      }
+    }
+    
+    // 4. Apply drop lines and create UNION_META
+    const rightOffset = 14;
+    const leftOffset = 0;
+    let leftIdx = leftUnions.length - 1;
+    let rightIdx = 0;
+
+    blocks.forEach((b) => {
+      const u = b.u;
+      const isRight = b.isRight;
+      const sid = partnerOf(u, pid);
+      
+      const childCenterX = b.x;
+      const slotW = b.w;
+      const spouseX = b.spouseX;
+      
+      let localAnchorX;
+      let dropYOffset;
+      
+      if (isRight) {
+         localAnchorX = spouseX - SG / 2;
+         dropYOffset = rightOffset + (rightIdx * 14);
+         rightIdx++;
+      } else {
+         localAnchorX = spouseX + CW + SG / 2;
+         dropYOffset = leftOffset + (leftIdx * 14);
+         leftIdx--;
+      }
+
+      const childLeft = childCenterX - slotW / 2;
+      const childRight = childCenterX + slotW / 2;
+      
+      UNION_META[u.id] = {
+        left: Math.min(isRight ? anchorX : spouseX, childLeft),
+        right: Math.max(isRight ? spouseX + CW : anchorX + CW, childRight),
+        localAnchorX,
+        coupleMidX: b.coupleMidX,
+        childCenterX,
+        spouseY: y + CH/2,
+        dropYOffset,
+        dropY: y + CH + DROP_BASE_DEFAULT + dropYOffset,
+        anchorPid: pid,
+        spouseId: sid || '',
+        slotStart: childLeft
+      };
+      
+      _placeUnionChildren(u, pid, childCenterX, y, dropYOffset);
+    });
+
+
+    return;
+  }
+  // ── End multi-union path ────────────────────────────────────────────────
+
+  // Single union or no unions: original behaviour unchanged.
   const leftEdge=cx-totalW/2;
   POS[pid]={x:leftEdge, y};
 
@@ -4026,21 +4369,27 @@ function placePerson(pid, cx, y){
       coupleMidX,
       childCenterX,
       spouseY:y+CH/2,
-      dropY:y+CH+40,
+      dropY:y+CH+DROP_BASE_DEFAULT,
       anchorPid:pid,
       spouseId:sid||'',
       slotStart
     };
     if(!COL[u.id]&&u.ch.length){
-      const childY=y+GH;
       const kids=unionChildrenOf(u);
-      const childTotalW=kids.reduce((acc,cid,i)=>acc+measurePerson(cid)+(i?SIBG:0),0);
+      const childTotalW=measureChildRowWidth(kids);
+      const extraKids=Math.max(0,kids.length-2);
+      const immediateChildSpan=childTotalW;
+      const spanBeyondPair=Math.max(0,immediateChildSpan-(CW*2+SIBG));
+      const childRowExtra=34 + Math.min(42, extraKids*9 + spanBeyondPair*0.03);
+      const childY=y+GH+childRowExtra;
+      const extraDrop=Math.min(24, 8 + extraKids*3 + spanBeyondPair*0.015);
+      UNION_META[u.id].dropY=Math.min(childY-8, y+CH+DROP_BASE_DEFAULT+extraDrop);
       let childCurX=childCenterX-childTotalW/2;
-      for(const cid of kids){
+      kids.forEach((cid,i)=>{
         const cw=measurePerson(cid);
         placePerson(cid, childCurX+cw/2, childY);
-        childCurX+=cw+SIBG;
-      }
+        if(i<kids.length-1) childCurX+=cw+siblingGapBetween(cid,kids[i+1]);
+      });
       separateSiblingSubtrees(kids, childCenterX);
       // Refresh the child-group center after subtree separation so connector jogs
       // point to the final subtree span rather than only the immediate child cards.
@@ -4107,13 +4456,16 @@ function shiftSubtree(pid, dx, seen=new Set()){
 function separateSiblingSubtrees(kids, childCenterX){
   if(kids.length<2) return;
   let prevRight=-Infinity;
+  let prevCid=null;
   for(const cid of kids){
     let b=subtreeBounds(cid);
-    if(b.left<prevRight+SIBG){
-      shiftSubtree(cid,prevRight+SIBG-b.left);
+    const desiredGap=prevCid?siblingGapBetween(prevCid,cid):0;
+    if(b.left<prevRight+desiredGap){
+      shiftSubtree(cid,prevRight+desiredGap-b.left);
       b=subtreeBounds(cid);
     }
     prevRight=b.right;
+    prevCid=cid;
   }
   const groupBounds=kids.map(cid=>subtreeBounds(cid));
   const left=Math.min(...groupBounds.map(b=>b.left));
@@ -4122,19 +4474,188 @@ function separateSiblingSubtrees(kids, childCenterX){
   if(dx) kids.forEach(cid=>shiftSubtree(cid,dx));
 }
 
+function visualUnionOrderOf(pid){
+  const myUnions=layoutUnionsOf(pid);
+  if(myUnions.length<=1) return myUnions;
+  const nRight=Math.ceil(myUnions.length/2);
+  const rightUnions=myUnions.slice(0,nRight);
+  const leftUnions=myUnions.slice(nRight);
+  return [...leftUnions].reverse().concat(rightUnions);
+}
+
+function unionChildBounds(u){
+  const kids=unionChildrenOf(u);
+  if(!kids.length) return {left:Infinity,right:-Infinity};
+  const bounds=kids.map(cid=>subtreeBounds(cid)).filter(b=>b.left!==Infinity&&b.right!==-Infinity);
+  if(!bounds.length) return {left:Infinity,right:-Infinity};
+  return {
+    left:Math.min(...bounds.map(b=>b.left)),
+    right:Math.max(...bounds.map(b=>b.right))
+  };
+}
+
+function refreshUnionChildCenter(u){
+  const meta=UNION_META[u.id];
+  if(!meta) return;
+  const bounds=unionChildBounds(u);
+  if(bounds.left===Infinity) return;
+  meta.childCenterX=(bounds.left+bounds.right)/2;
+}
+
+function separateUnionSubtrees(pid){
+  const unions=visualUnionOrderOf(pid).filter(u=>!COL[u.id]&&unionChildrenOf(u).length);
+  if(unions.length<2) return;
+  let prevRight=-Infinity;
+  for(const u of unions){
+    let bounds=unionChildBounds(u);
+    if(bounds.left===Infinity) continue;
+    const desiredGap=Math.max(SIBG, SIBLING_COUPLE_GAP_DEFAULT);
+    if(bounds.left<prevRight+desiredGap){
+      const dx=prevRight+desiredGap-bounds.left;
+      unionChildrenOf(u).forEach(cid=>shiftSubtree(cid,dx));
+      bounds=unionChildBounds(u);
+    }
+    refreshUnionChildCenter(u);
+    if(bounds.left!==Infinity) prevRight=bounds.right;
+  }
+}
+
+// After initial placement each union computes its own childY independently,
+// which causes persons in the same generation to land at different Y values
+// (parents with more children push their child row lower).
+// This pass normalises every generation to the deepest Y in that generation
+// so all cousins/siblings sit on the same horizontal baseline.
+function normalizeGenerationY(){
+  // 1. Group every placed person by generation
+  const genPids={};
+  for(const pid of Object.keys(POS)){
+    const g=genOf(pid);
+    if(!genPids[g]) genPids[g]=[];
+    genPids[g].push(pid);
+  }
+
+  // 2. Shift each person to the maximum (deepest) Y within their generation
+  for(const pids of Object.values(genPids)){
+    const maxY=Math.max(...pids.map(pid=>POS[pid].y));
+    for(const pid of pids){
+      if(POS[pid].y<maxY) POS[pid].y=maxY;
+    }
+  }
+
+  // 3. Recompute Y-derived UNION_META fields from the updated positions
+  for(const u of U){
+    const meta=UNION_META[u.id];
+    if(!meta) continue;
+    const anchorPid=meta.anchorPid;
+    if(!anchorPid||!POS[anchorPid]) continue;
+    const anchorY=POS[anchorPid].y;
+    const offset = meta.dropYOffset || 0;
+    meta.spouseY=anchorY+CH/2;
+    if(!COL[u.id]&&u.ch.length){
+      const kids=unionChildrenOf(u);
+      const childYs=kids.map(c=>POS[c]).filter(Boolean).map(p=>p.y);
+      if(childYs.length){
+        const childY=Math.min(...childYs);
+        meta.dropY=Math.min(childY-8, anchorY+CH+DROP_BASE_DEFAULT+offset);
+      }
+    } else {
+      meta.dropY=anchorY+CH+DROP_BASE_DEFAULT+offset;
+    }
+  }
+}
+
 function layout(){
   POS={};
   UNION_META={};
   _mW={};
   clearGenCache();
   normalizeUnions();
+  updateLayoutDensity();
 
   const rs=rootAnchors();
-  let curX=80;
+  let curX=ROOT_START_X;
   for(const pid of rs){
     const w=measurePerson(pid);
-    placePerson(pid, curX+w/2, 70);
-    curX+=w+SIBG*2;
+    placePerson(pid, curX+w/2, ROOT_START_Y);
+    curX+=w+ROOT_GAP;
+  }
+
+  // Align all persons in the same generation to the same Y baseline
+  normalizeGenerationY();
+
+  // Centre each root person (and their spouses) above the full span of
+  // all their descendants.  Only the root card(s) move — children stay put,
+  // so the connector jogs adjust automatically.
+  for(const pid of rs) {
+    centreRootOverDescendants(pid);
+  }
+}
+
+function centreRootOverDescendants(pid){
+  const myUnions=layoutUnionsOf(pid);
+  if (myUnions.length > 1) return;
+  if(!myUnions.length||!POS[pid]) return;
+
+  // Measure the combined left/right extent of every child subtree
+  let lo=Infinity, hi=-Infinity;
+  for(const u of myUnions){
+    if(COL[u.id]) continue;
+    for(const cid of unionChildrenOf(u)){
+      const b=subtreeBounds(cid);
+      if(b.left <lo) lo=b.left;
+      if(b.right>hi) hi=b.right;
+    }
+  }
+  if(lo===Infinity) return; // no visible children — nothing to centre over
+
+  const childrenCentreX=(lo+hi)/2;
+  const anchorCentreX=POS[pid].x+CW/2;
+  const dx=childrenCentreX-anchorCentreX;
+  if(Math.abs(dx)<1) return;
+
+  // Shift only the root card and each spouse card; children don't move.
+  POS[pid].x+=dx;
+  for(const u of myUnions){
+    const sid=partnerOf(u,pid);
+    if(sid&&POS[sid]) POS[sid].x+=dx;
+    const meta=UNION_META[u.id];
+    if(meta){
+      meta.localAnchorX+=dx;
+      meta.coupleMidX  +=dx;
+      meta.left        +=dx;
+      meta.right       +=dx;
+      meta.slotStart   +=dx;
+    }
+  }
+
+  if (myUnions.length > 1) {
+    const leftOffset = dx > 0 ? 0 : 14;
+    const rightOffset = dx > 0 ? 14 : 0;
+    let leftIdx = 0, rightIdx = 0;
+    for(const u of myUnions) {
+      const meta=UNION_META[u.id];
+      if(!meta) continue;
+      const isLeft = meta.left < POS[pid].x;
+      if (isLeft) {
+         meta.dropYOffset = leftOffset + (leftIdx * 14);
+         leftIdx++;
+      } else {
+         meta.dropYOffset = rightOffset + (rightIdx * 14);
+         rightIdx++;
+      }
+      
+      const anchorY = POS[pid].y;
+      if(!COL[u.id]&&u.ch.length){
+        const kids=unionChildrenOf(u);
+        const childYs=kids.map(c=>POS[c]).filter(Boolean).map(p=>p.y);
+        if(childYs.length){
+          const childY=Math.min(...childYs);
+          meta.dropY=Math.min(childY-8, anchorY+CH+DROP_BASE_DEFAULT+meta.dropYOffset);
+        }
+      } else {
+        meta.dropY=anchorY+CH+DROP_BASE_DEFAULT+meta.dropYOffset;
+      }
+    }
   }
 }
 
@@ -4153,7 +4674,6 @@ function syncCardPhotoButton(){
 
 function toggleCardPhoto(){
   SHOW_CARD_PHOTO=!SHOW_CARD_PHOTO;
-  CW=SHOW_CARD_PHOTO?CW_PHOTO:CW_NORMAL;
   syncCardPhotoButton();
   render();
 }
@@ -4267,6 +4787,7 @@ function render(){
   }
 }
 
+
 function drawLines(svg){
   function L(x1,y1,x2,y2,col,w){
     const l=document.createElementNS('http://www.w3.org/2000/svg','line');
@@ -4284,20 +4805,47 @@ function drawLines(svg){
     // Each union draws from its own local anchor so later spouses do not look
     // visually chained through earlier spouse regions.
     if(spouse){
-      const leftCard=anchor.x<=spouse.x?anchor:spouse;
-      const rightCard=leftCard===anchor?spouse:anchor;
-      L(leftCard.x+CW,uy,meta.localAnchorX,uy,'#b8923a',2);
-      L(meta.localAnchorX,uy,rightCard.x,uy,'#b8923a',2.5);
+      // If 1 or 2 spouses, use side-by-side gold lines. 
+      // If 3 or more spouses, use the underneath black bracket.
+      if (meta.spouseCount > 2) {
+         const bracketY = anchor.y + CH + 27; // Center of the toggle button
+         
+         // Anchor to bracket bottom (BLACK)
+         L(anchor.x + CW/2, uy, anchor.x + CW/2, bracketY, '#2c2420', 1.5);
+         // Spouse to bracket bottom (BLACK)
+         L(spouse.x + CW/2, uy, spouse.x + CW/2, bracketY, '#2c2420', 1.5);
+         // Horizontal bracket connecting them (forms a continuous bus for multiple spouses) (BLACK)
+         const bracketLeftX = Math.min(anchor.x + CW/2, spouse.x + CW/2);
+         const bracketRightX = Math.max(anchor.x + CW/2, spouse.x + CW/2);
+         L(bracketLeftX, bracketY, bracketRightX, bracketY, '#2c2420', 1.5);
+         
+         meta.childDropStartY = bracketY;
+      } else {
+         const leftCard=anchor.x<=spouse.x?anchor:spouse;
+         const rightCard=leftCard===anchor?spouse:anchor;
+         L(leftCard.x+CW,uy,meta.localAnchorX,uy,'#b8923a',2);
+         L(meta.localAnchorX,uy,rightCard.x,uy,'#b8923a',2.5);
+         meta.childDropStartY = uy;
+      }
+    } else {
+      meta.childDropStartY = uy;
     }
+    
     if(!COL[u.id]&&u.ch.length){
       const dropY=meta.dropY;
-      L(meta.localAnchorX,uy,meta.localAnchorX,dropY,'#2c2420',1.5);
-      if(Math.abs(meta.childCenterX-meta.localAnchorX)>0.5)L(meta.localAnchorX,dropY,meta.childCenterX,dropY,'#2c2420',1.5);
       const kids=unionChildrenOf(u);
       const cxs=kids.map(c=>POS[c]).filter(Boolean).map(p=>p.x+CW/2);
       if(!cxs.length)continue;
-      const allXs=[...cxs,meta.childCenterX];
-      if(cxs.length>1||Math.abs(meta.childCenterX-cxs[0])>0.5)L(Math.min(...allXs),dropY,Math.max(...allXs),dropY,'#2c2420',1.5);
+      // Vertical drop from the couple connector
+      L(meta.localAnchorX, meta.childDropStartY, meta.localAnchorX, dropY, '#2c2420', 1.5);
+      // Sibling bar spans only actual child card positions — never bleeds into a
+      // neighbouring union's territory (fixes the "connected" visual between unions).
+      const barL=Math.min(...cxs), barR=Math.max(...cxs);
+      // Clamp the horizontal jog end-point within the bar so we don't overshoot
+      const joinX=Math.max(barL,Math.min(barR,meta.localAnchorX));
+      if(Math.abs(joinX-meta.localAnchorX)>0.5)L(meta.localAnchorX,dropY,joinX,dropY,'#2c2420',1.5);
+      if(cxs.length>1)L(barL,dropY,barR,dropY,'#2c2420',1.5);
+      else if(Math.abs(joinX-cxs[0])>0.5)L(joinX,dropY,cxs[0],dropY,'#2c2420',1.5);
       for(const c of kids){const cp=POS[c];if(!cp)continue;L(cp.x+CW/2,dropY,cp.x+CW/2,cp.y,'#2c2420',1.5);}
     }
   }
@@ -5367,6 +5915,10 @@ function normalizeUnions(){
     if(!u.ch.length&&(!u.a||!u.b)){U.splice(i,1);continue;}
     if(!u.a&&!u.b&&!u.ch.length) U.splice(i,1);
   }
+  U.forEach((u,idx)=>{
+    const ord = Number(u.order);
+    u.order = Number.isFinite(ord) ? ord : idx;
+  });
 }
 
 const historyStack=[];
@@ -7092,9 +7644,6 @@ CloudStorage.loadAll()
 </script>
 <!-- Debug Footer -->
 <div style="position:fixed;bottom:10px;right:10px;z-index:9999;opacity:0.3" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.3">
-  <button id="debug-clear-btn" onclick="debugClearStorage()" style="font-size:10px;padding:4px 8px;cursor:pointer;background:#fff;border:1px solid #ccc;border-radius:4px;color:#666">
-    Clear Prototype Storage
-  </button>
 </div>
 
 </body>
