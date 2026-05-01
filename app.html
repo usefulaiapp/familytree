@@ -4049,7 +4049,7 @@ function nextUnionId(){
 const CW_NORMAL_DEFAULT=140,CW_NORMAL_MEDIUM=128,CW_NORMAL_COMPACT=116;
 const CW_PHOTO_DEFAULT=200,CW_PHOTO_MEDIUM=184,CW_PHOTO_COMPACT=168;
 const CH=82;
-const SG_DEFAULT=22,SIBG_DEFAULT=10,GH_DEFAULT=172,ROOT_START_X_DEFAULT=80,ROOT_START_Y_DEFAULT=70,ROOT_GAP_DEFAULT=40,DROP_BASE_DEFAULT=88,SIBLING_COUPLE_GAP_DEFAULT=4;
+const SG_DEFAULT=22,SIBG_DEFAULT=40,GH_DEFAULT=172,ROOT_START_X_DEFAULT=80,ROOT_START_Y_DEFAULT=70,ROOT_GAP_DEFAULT=40,DROP_BASE_DEFAULT=88,SIBLING_COUPLE_GAP_DEFAULT=4;
 let SG=SG_DEFAULT,SIBG=SIBG_DEFAULT,GH=GH_DEFAULT,ROOT_START_X=ROOT_START_X_DEFAULT,ROOT_START_Y=ROOT_START_Y_DEFAULT,ROOT_GAP=ROOT_GAP_DEFAULT;
 let CW=CW_NORMAL_DEFAULT;
 const COL={};
@@ -4687,19 +4687,22 @@ function shiftSubtree(pid, dx, seen=new Set()){
 // push later ones right, then recenter the whole sibling group under the union.
 function separateSiblingSubtrees(kids, childCenterX){
   if(kids.length<2) return;
+  // Helper: compute desired gap between two siblings
+  function desiredGapBetween(prevCid,cid){
+    let gap=siblingGapBetween(prevCid,cid);
+    const prevUnions=layoutUnionsOf(prevCid);
+    if(prevUnions.length>0){
+      const prevHasDescendants=prevUnions.some(uu=>!COL[uu.id]&&unionChildrenOf(uu).length>0);
+      if(prevHasDescendants) gap=Math.max(gap,SIBG);
+    }
+    return gap;
+  }
+  // Pass 1: push right to fix overlaps
   let prevRight=-Infinity;
   let prevCid=null;
   for(const cid of kids){
     let b=subtreeBounds(cid);
-    let desiredGap=prevCid?siblingGapBetween(prevCid,cid):0;
-    // Extra gap between subtrees when previous sibling has spouses/children
-    if(prevCid&&desiredGap>0){
-      const prevUnions=layoutUnionsOf(prevCid);
-      if(prevUnions.length>0){
-        const prevHasDescendants=prevUnions.some(uu=>!COL[uu.id]&&unionChildrenOf(uu).length>0);
-        if(prevHasDescendants) desiredGap=Math.max(desiredGap,SIBG);
-      }
-    }
+    const desiredGap=prevCid?desiredGapBetween(prevCid,cid):0;
     if(b.left<prevRight+desiredGap){
       shiftSubtree(cid,prevRight+desiredGap-b.left);
       b=subtreeBounds(cid);
@@ -4707,6 +4710,30 @@ function separateSiblingSubtrees(kids, childCenterX){
     prevRight=b.right;
     prevCid=cid;
   }
+  // Pass 2: compact left to remove excess gaps (use larger gap when subtrees have children)
+  function compactGapBetween(prevCid,cid){
+    const base=desiredGapBetween(prevCid,cid);
+    const prevHasKids=layoutUnionsOf(prevCid).some(u=>!COL[u.id]&&unionChildrenOf(u).length>0);
+    const cidHasKids=layoutUnionsOf(cid).some(u=>!COL[u.id]&&unionChildrenOf(u).length>0);
+    if(prevHasKids||cidHasKids) return Math.max(base,70);
+    return base;
+  }
+  prevRight=-Infinity;
+  prevCid=null;
+  for(const cid of kids){
+    let b=subtreeBounds(cid);
+    if(prevCid!==null){
+      const targetGap=compactGapBetween(prevCid,cid);
+      const excess=b.left-(prevRight+targetGap);
+      if(excess>0.5){
+        shiftSubtree(cid,-excess);
+        b=subtreeBounds(cid);
+      }
+    }
+    prevRight=b.right;
+    prevCid=cid;
+  }
+  // Re-centre the whole group around childCenterX
   const groupBounds=kids.map(cid=>subtreeBounds(cid));
   const left=Math.min(...groupBounds.map(b=>b.left));
   const right=Math.max(...groupBounds.map(b=>b.right));
