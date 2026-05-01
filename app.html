@@ -854,6 +854,164 @@ body.header-compact .zpct{
   .modal{border-radius:3px}
 }
 
+/* ── Landscape phone: height-constrained (e.g. iPhone horizontal) ── */
+@media(max-height:500px) and (orientation:landscape){
+  /* Single-row header: everything in one line, no wrapping */
+  header{
+    min-height:0;
+    flex-wrap:nowrap;
+    align-items:center;
+    padding:4px 12px;
+    gap:8px;
+  }
+  .site-brand{flex-shrink:0}
+  .site-title{font-size:13px}
+  .ver-badge{display:none}
+  /* Nav tabs inline with header */
+  .main-nav{
+    order:0;
+    flex:1 1 auto;
+    min-width:0;
+    overflow-x:auto;
+    padding:0;
+  }
+  .nav-btn{font-size:12px;padding:4px 8px}
+  /* hdr-r: collapse to just the toggle, inline */
+  .hdr-r{
+    flex-direction:row;
+    align-items:center;
+    gap:6px;
+    margin-left:0;
+  }
+  .hdr-actions{gap:6px}
+  /* Hide heavy action buttons; keep login/join/toggle */
+  .hdr-actions .hbtn:not(#hdr-login):not(#hdr-join):not(#lang-btn):not(#mob-meta-toggle){display:none!important}
+  /* Collapse hdr-meta by default */
+  .hdr-meta{
+    position:absolute;
+    top:100%;
+    right:0;
+    background:var(--p2);
+    border:1px solid var(--bd);
+    border-radius:0 0 8px 8px;
+    padding:6px 12px;
+    flex-direction:row;
+    flex-wrap:wrap;
+    gap:6px;
+    z-index:50;
+    box-shadow:0 4px 12px rgba(0,0,0,.08);
+    max-height:0;
+    overflow:hidden;
+    transition:max-height .2s ease, padding .2s ease;
+  }
+  .hdr-meta.mob-open{
+    max-height:120px;
+    padding:6px 12px;
+  }
+  /* Make header relative so dropdown positions correctly */
+  header{position:relative}
+  /* Toolbar: thin single scrollable row */
+  .tree-tb{
+    flex-wrap:nowrap!important;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+    padding:4px 8px 6px;
+    gap:5px;
+  }
+  .tree-tb::-webkit-scrollbar{display:none}
+  .tbtn{height:28px;font-size:11px}
+  .srch{flex:0 0 auto!important;max-width:120px!important}
+  .srch input{width:96px!important;font-size:11px}
+  .tb-spacer{display:flex!important;flex:0 0 4px!important;min-width:0!important}
+  .tb-right{width:auto!important;margin-left:auto!important;flex-shrink:0}
+  /* Auto-hide notices in landscape — space is critical */
+  #family-reminder,.sync-reminder-bar{display:none!important}
+  /* Show ⚙ toggle */
+  #mob-meta-toggle{display:inline-flex!important}
+}
+
+/* ── Mobile canvas-first layout (≤ 640px portrait) ── */
+@media(max-width:640px){
+  /* Header: make relative so dropdown can anchor to it */
+  header{position:relative}
+
+  /* Hide the entire hdr-meta row — accessible via ⚙ dropdown */
+  .hdr-meta{display:none!important}
+
+  /* ⚙ dropdown: appears below header when toggled */
+  .hdr-meta.mob-open{
+    display:flex!important;
+    flex-direction:row;
+    flex-wrap:wrap;
+    position:absolute;
+    top:calc(100% + 1px);
+    right:8px;
+    background:var(--p2);
+    border:1px solid var(--bd);
+    border-radius:0 0 10px 10px;
+    padding:8px 12px;
+    gap:6px;
+    z-index:200;
+    box-shadow:0 6px 18px rgba(0,0,0,.10);
+    min-width:220px;
+    align-items:center;
+  }
+
+  /* Hide non-essential header items — tight on space */
+  .hdr-actions .font-ctl{display:none!important}
+  #hdr-guide{display:none!important}
+
+  /* ⚙ toggle button */
+  #mob-meta-toggle{
+    display:inline-flex!important;
+    align-items:center;justify-content:center;
+    width:30px;height:30px;border-radius:50%;
+    border:1px solid var(--bd);background:var(--p2);
+    font-size:15px;cursor:pointer;flex-shrink:0;
+    color:var(--ink2);line-height:1;
+  }
+
+  /* Toolbar: single horizontal scrollable row — no wrapping */
+  .tree-tb{
+    flex-wrap:nowrap!important;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+    padding:6px 10px 8px;
+    gap:6px;
+  }
+  .tree-tb::-webkit-scrollbar{display:none}
+
+  /* Search: compact, not full-width, stays in the scrollable row */
+  .srch{flex:0 0 auto!important;max-width:130px!important}
+  .srch input{width:100px!important;min-width:0!important}
+
+  /* Spacer: let it shrink so export stays on the same row */
+  .tb-spacer{display:flex!important;flex:0 0 4px!important;min-width:0!important}
+
+  /* Export button: stays inline, not its own row */
+  .tb-right{width:auto!important;margin-left:auto!important;flex-shrink:0}
+
+  /* Notice banners: add room for dismiss × button */
+  #family-reminder,.sync-reminder-bar{position:relative;padding-right:36px!important}
+
+  /* Notice dismiss × button */
+  .notice-dismiss{
+    display:flex!important;
+    position:absolute;right:8px;top:50%;transform:translateY(-50%);
+    width:22px;height:22px;border:none;background:transparent;
+    cursor:pointer;font-size:18px;color:var(--ink3);
+    align-items:center;justify-content:center;line-height:1;padding:0;
+  }
+}
+
+/* Desktop: hide mobile-only elements */
+@media(min-width:641px){
+  #mob-meta-toggle{display:none!important}
+  .notice-dismiss{display:none!important}
+}
+
 
 /* ── DRIVE STATUS BAR ── */
 #drive-status-bar{
@@ -988,6 +1146,7 @@ body.header-compact .zpct{
   </nav>
   <div class="hdr-r">
     <div class="hdr-actions">
+      <button id="mob-meta-toggle" onclick="toggleMobMeta()" title="更多選項" style="display:none">⚙</button>
       <div class="font-ctl">
         <span class="font-lbl" id="font-size-lbl">字體大小</span>
         <select class="font-sel" id="font-size-select" onchange="setFontSizeMode(this.value)">
@@ -1054,9 +1213,11 @@ body.header-compact .zpct{
     <!-- Family-use reminder bar -->
     <div id="family-reminder" style="display:none;padding:5px 16px;background:rgba(184,146,58,0.07);border-bottom:1px solid rgba(184,146,58,0.18);color:var(--ink3);text-align:center;line-height:1.5">
       <span id="family-reminder-txt">此家族樹主要供家族內部查看與整理。分享前請確認內容是否適合，並避免公開分享仍在世親屬的個人資料、照片或故事。</span>
+      <button class="notice-dismiss" onclick="dismissNotice('family-reminder')" title="關閉" style="display:none">×</button>
     </div>
     <div id="sync-reminder" class="sync-reminder-bar">
       <span id="sync-reminder-txt">每次修改後，請先等候看到綠色的 Google Drive 儲存完成提示，再進行下一次編輯。</span>
+      <button class="notice-dismiss" onclick="dismissNotice('sync-reminder')" title="關閉" style="display:none">×</button>
     </div>
 
     <!-- Welcome Dashboard (shown if no tree loaded OR authorization required) -->
@@ -4099,23 +4260,13 @@ function measurePerson(pid){
     _mW['p:'+pid]=w; return w;
   }
 
-  // Multiple unions: split the list in half.
-  // First ceil(N/2) unions go to the RIGHT of the anchor card,
-  // remaining floor(N/2) unions go to the LEFT.
-  // This keeps the anchor near the visual centre of all its children
-  // instead of pushing it to the far left of a one-directional strip.
-  const nRight=Math.ceil(myUnions.length/2);
+  // Multiple unions: all spouses on ONE side (right of anchor).
   let rightW=0;
-  myUnions.slice(0,nRight).forEach((u,i,arr)=>{
+  myUnions.forEach((u,i,arr)=>{
     rightW+=SG+measureUnion(u.id,pid);
     if(i<arr.length-1) rightW+=SIBG;
   });
-  let leftW=0;
-  myUnions.slice(nRight).forEach((u,i,arr)=>{
-    leftW+=SG+measureUnion(u.id,pid);
-    if(i<arr.length-1) leftW+=SIBG;
-  });
-  const w=leftW+CW+rightW;
+  const w=CW+rightW;
   _mW['p:'+pid]=w; return w;
 }
 
@@ -4167,170 +4318,218 @@ function placePerson(pid, cx, y){
       const m=UNION_META[u.id];
       if(m.slotStart>=anchorX+CW && m.right>slotStart) slotStart=m.right+SIBG;
     }
+    // Sort todo unions by order for consistent segment assignment
+    todo.sort((a,b)=>(a.order||0)-(b.order||0));
     let offsetIndex = myUnions.length - todo.length;
-    for(const u of todo){
+    for(let ti=0;ti<todo.length;ti++){
+      const u=todo[ti];
       const slotW=measureUnion(u.id,pid);
       const sid=partnerOf(u,pid);
       if(sid&&P[sid]&&!POS[sid]) POS[sid]={x:slotStart+SG,y:anchorY};
       const localAnchorX=slotStart+SG/2;
       const coupleMidX=(anchorX+CW/2)+(sid&&POS[sid]?((POS[sid].x+CW/2)-(anchorX+CW/2))/2:0);
-      const childCenterX=slotStart+SG+slotW/2;
+      // Segment: between previous spouse card and this spouse card
+      let prevRightX;
+      if(ti===0){
+        // First todo union — prev card is anchor or last already-placed spouse
+        const placed=myUnions.filter(uu=>UNION_META[uu.id]);
+        if(placed.length){
+          const lastPlaced=placed[placed.length-1];
+          const lastSid=partnerOf(lastPlaced,pid);
+          prevRightX=(lastSid&&POS[lastSid])?POS[lastSid].x+CW:anchorX+CW;
+        } else {
+          prevRightX=anchorX+CW;
+        }
+      } else {
+        const prevSid=partnerOf(todo[ti-1],pid);
+        prevRightX=(prevSid&&POS[prevSid])?POS[prevSid].x+CW:anchorX+CW;
+      }
+      const segLX=prevRightX;
+      const segRX=(sid&&POS[sid])?POS[sid].x:prevRightX;
+      const segMX=(segLX+segRX)/2;
+      const underlineY=anchorY+CH+20;
+      // Center children under segment midpoint
+      const childCenterX=segMX;
+
       UNION_META[u.id]={
         left:slotStart,right:slotStart+SG+slotW,
         localAnchorX,coupleMidX,childCenterX,
         spouseY:anchorY+CH/2,dropY:anchorY+CH+DROP_BASE_DEFAULT+(offsetIndex*14),
         spouseCount: myUnions.length,
-        bracketYOffset: offsetIndex * 8,
+        segmentLeftX:segLX,
+        segmentRightX:segRX,
+        segmentMidX:segMX,
+        underlineY:underlineY,
         anchorPid:pid,spouseId:sid||'',slotStart
       };
-      _placeUnionChildren(u,pid,childCenterX,anchorY, offsetIndex*14);
+      _placeUnionChildren(u,pid,segMX,anchorY, offsetIndex*14);
       offsetIndex++;
       slotStart+=SG+slotW+SIBG;
     }
+    // Update ALL unions (including previously placed) with segment info
+    const allSorted=[...myUnions].sort((a,b)=>(a.order||0)-(b.order||0));
+    allSorted.forEach((u,i)=>{
+      const m=UNION_META[u.id];
+      if(!m) return;
+      m.spouseCount=myUnions.length;
+      // Recalculate segment based on actual card positions
+      const uSid=partnerOf(u,pid);
+      let pRightX;
+      if(i===0){
+        pRightX=anchorX+CW;
+      } else {
+        const pSid=partnerOf(allSorted[i-1],pid);
+        pRightX=(pSid&&POS[pSid])?POS[pSid].x+CW:anchorX+CW;
+      }
+      m.segmentLeftX=pRightX;
+      m.segmentRightX=(uSid&&POS[uSid])?POS[uSid].x:pRightX;
+      m.segmentMidX=(m.segmentLeftX+m.segmentRightX)/2;
+      m.underlineY=anchorY+CH+20;
+    });
     return;
   }
   const myUnions=layoutUnionsOf(pid);
   const totalW=measurePerson(pid);
 
   // ── Multi-union path ────────────────────────────────────────────────────
-  // Split 2+ spouse unions around the anchor.
+  // All spouses on ONE side (right of anchor), sorted by union order.
+  // This ensures clean bracket lines with no crossing.
   if(myUnions.length>1){
-    const nRight = Math.ceil(myUnions.length/2);
-    const rightUnions = myUnions.slice(0, nRight);
-    const leftUnions = myUnions.slice(nRight);
-    const visualUnions = [...leftUnions].reverse().concat(rightUnions);
+    // All spouses on ONE side (right of anchor), sorted by union order.
+    // Children are grouped by union (not combined), with staggered under-brackets.
+    const visualOrder=[...myUnions].sort((a,b)=>(a.order||0)-(b.order||0));
 
-    const unionSlotWs = new Map();
-    visualUnions.forEach((u) => {
-      unionSlotWs.set(u.id, measureUnion(u.id, pid));
+    // 1. Gather each union's children group and measure widths
+    const unionGroups=visualOrder.map(u=>{
+      const kids=(COL[u.id]||!u.ch.length)?[]:unionChildrenOf(u);
+      const groupW=kids.length?measureChildRowWidth(kids):0;
+      return {u,kids,groupW};
     });
 
-    const anchorX = cx - CW / 2;
-    const anchorCenter = anchorX + CW / 2;
-    POS[pid] = {x: anchorX, y};
+    // 2. Total children span (groups packed left-to-right with double SIBG gaps)
+    let totalChildrenW=0;
+    const activeGroups=unionGroups.filter(g=>g.groupW>0);
+    activeGroups.forEach((g,i)=>{
+      totalChildrenW+=g.groupW;
+      if(i<activeGroups.length-1) totalChildrenW+=SIBG*2;
+    });
 
-    // 1. Place spouses tightly around the anchor
-    let simRightSpouseX = anchorX + CW + SG;
-    let simLeftSpouseX = anchorX - SG - CW;
-    let blocks = visualUnions.map(u => {
-      const sid = partnerOf(u, pid);
-      const isRight = rightUnions.includes(u);
-      let spouseX;
-      if (sid && P[sid] && !POS[sid]) {
-         spouseX = isRight ? simRightSpouseX : simLeftSpouseX;
-         POS[sid] = {x: spouseX, y};
-      } else if (sid && POS[sid]) {
-         spouseX = POS[sid].x;
-      } else {
-         spouseX = isRight ? simRightSpouseX : simLeftSpouseX;
+    // 3. Parent cluster width: anchor + all spouses
+    let parentClusterW=CW;
+    visualOrder.forEach(u=>{
+      const sid=partnerOf(u,pid);
+      if(sid&&P[sid]) parentClusterW+=SG+CW;
+    });
+
+    // 4. Center the parent cluster over the children span
+    const overallW=Math.max(parentClusterW,totalChildrenW);
+    const anchorX=cx-parentClusterW/2;
+    POS[pid]={x:anchorX,y};
+
+    // 5. Place all spouses rightward from anchor
+    let curR=anchorX+CW;
+    visualOrder.forEach(u=>{
+      const sid=partnerOf(u,pid);
+      if(sid&&P[sid]&&!POS[sid]) POS[sid]={x:curR+SG,y};
+      curR=(sid&&POS[sid])?POS[sid].x+CW:curR+SG+CW;
+    });
+
+    // 6. Pack all children groups left-to-right (even spacing), centered at cx
+    const allKids=activeGroups.flatMap(g=>g.kids);
+    const totalKids=allKids.length;
+    const extraKids=Math.max(0,totalKids-2);
+    const spanBeyondPair=Math.max(0,totalChildrenW-(CW*2+SIBG));
+    const childRowExtra=34+Math.min(42,extraKids*9+spanBeyondPair*0.03);
+    const childY=y+GH+childRowExtra;
+    const extraDrop=Math.min(24,8+extraKids*3+spanBeyondPair*0.015);
+
+    // Umbrella rule: sort groups by width, assign dropY offsets (widest=deepest)
+    const groupsWithWidth=unionGroups.map((g,i)=>({...g,origIdx:i}));
+    const sortedByWidth=[...groupsWithWidth].sort((a,b)=>a.groupW-b.groupW);
+    const dropYOffsets=new Array(unionGroups.length).fill(0);
+    sortedByWidth.forEach((g,rank)=>{dropYOffsets[g.origIdx]=rank*14;});
+
+    // Pack children groups left-to-right starting from cx - totalChildrenW/2
+    let childCurX=cx-totalChildrenW/2;
+    unionGroups.forEach((g,i)=>{
+      const u=g.u;
+      const sid=partnerOf(u,pid);
+      const spouse=sid?POS[sid]:null;
+
+      let groupCenterX=childCurX+g.groupW/2;
+      if(g.kids.length){
+        let kidX=childCurX;
+        g.kids.forEach((cid,j)=>{
+          const cw=measurePerson(cid);
+          placePerson(cid,kidX+cw/2,childY);
+          if(j<g.kids.length-1) kidX+=cw+siblingGapBetween(cid,g.kids[j+1]);
+        });
+        separateSiblingSubtrees(g.kids,childCurX+g.groupW/2);
+        // Refresh group center from actual positions
+        const cxs=g.kids.map(c=>POS[c]).filter(Boolean).map(p=>p.x+CW/2);
+        if(cxs.length) groupCenterX=(Math.min(...cxs)+Math.max(...cxs))/2;
+        childCurX+=g.groupW+SIBG*2;
       }
-      
-      if (isRight) simRightSpouseX = spouseX + CW + SG;
-      else simLeftSpouseX = spouseX - CW - SG;
 
-      const coupleMidX = (anchorX + CW/2) + (spouseX + CW/2 - (anchorX + CW/2)) / 2;
-      return { u, isRight, spouseX, coupleMidX, w: unionSlotWs.get(u.id), x: coupleMidX };
+      const coupleMidX=spouse
+        ?((anchorX+CW/2)+(spouse.x+CW/2))/2
+        :anchorX+CW/2;
+      const localAnchorX=spouse
+        ?(anchorX+CW+spouse.x)/2
+        :anchorX+CW/2;
+
+      const dropYOffset=dropYOffsets[i];
+      const dropY=g.kids.length
+        ?Math.min(childY-8,y+CH+DROP_BASE_DEFAULT+extraDrop+dropYOffset)
+        :y+CH+DROP_BASE_DEFAULT+dropYOffset;
+
+      UNION_META[u.id]={
+        left:anchorX,
+        right:spouse?spouse.x+CW:anchorX+CW,
+        localAnchorX,
+        coupleMidX,
+        childCenterX:groupCenterX,
+        spouseY:y+CH/2,
+        underlineY:y+CH+20,
+        dropYOffset,
+        dropY,
+        anchorPid:pid,
+        spouseId:sid||'',
+        slotStart:anchorX,
+        spouseCount:myUnions.length
+      };
     });
 
-    // Assign dropYOffsets dynamically based on children block width (Umbrella Rule).
-    // The widest families get the lowest horizontal lines, allowing them to stretch under smaller families without crossing lines.
-    const sortedBlocks = [...blocks].sort((a, b) => a.w - b.w);
-    sortedBlocks.forEach((b, i) => {
-        b.dropYOffset = i * 14;
-    });
-
-    // 2. Resolve overlaps & boundaries symmetrically so children stay under their respective parents
-    let resolved = false;
-    for (let iter = 0; iter < 100 && !resolved; iter++) {
-      resolved = true;
-      for (let i = 0; i < blocks.length - 1; i++) {
-        const b1 = blocks[i];
-        const b2 = blocks[i+1];
-        if (b1.dropYOffset < b2.dropYOffset) {
-           const maxRight = b2.coupleMidX - SIBG;
-           if (b1.x + b1.w/2 > maxRight) { b1.x = maxRight - b1.w/2; resolved = false; }
-        } else if (b1.dropYOffset > b2.dropYOffset) {
-           const minLeft = b1.coupleMidX + SIBG;
-           if (b2.x - b2.w/2 < minLeft) { b2.x = minLeft + b2.w/2; resolved = false; }
-        } else {
-           const maxRight = b2.coupleMidX - SIBG;
-           if (b1.x + b1.w/2 > maxRight) { b1.x = maxRight - b1.w/2; resolved = false; }
-           const minLeft = b1.coupleMidX + SIBG;
-           if (b2.x - b2.w/2 < minLeft) { b2.x = minLeft + b2.w/2; resolved = false; }
+    // Re-centre the parent cluster over the actual span of all direct children.
+    const allDirectKids=activeGroups.flatMap(g=>g.kids);
+    if(allDirectKids.length){
+      const branches=allDirectKids.map(cid=>immediateBranchBounds(cid)).filter(b=>b.left!==Infinity);
+      if(branches.length){
+        const actualLeft =Math.min(...branches.map(b=>b.left));
+        const actualRight=Math.max(...branches.map(b=>b.right));
+        const actualCx   =(actualLeft+actualRight)/2;
+        let clusterLeft =POS[pid].x, clusterRight=POS[pid].x+CW;
+        visualOrder.forEach(u=>{
+          const sid=partnerOf(u,pid);
+          if(sid&&POS[sid]){clusterLeft=Math.min(clusterLeft,POS[sid].x);clusterRight=Math.max(clusterRight,POS[sid].x+CW);}
+        });
+        const clusterCx=(clusterLeft+clusterRight)/2;
+        const dx=actualCx-clusterCx;
+        if(Math.abs(dx)>0.5){
+          POS[pid].x+=dx;
+          visualOrder.forEach(u=>{const sid=partnerOf(u,pid);if(sid&&POS[sid])POS[sid].x+=dx;});
+          for(const u of visualOrder){
+            const meta=UNION_META[u.id];
+            if(meta){
+              meta.left+=dx;meta.right+=dx;meta.localAnchorX+=dx;meta.coupleMidX+=dx;meta.slotStart+=dx;
+              if(meta.segmentLeftX!==undefined)meta.segmentLeftX+=dx;
+              if(meta.segmentRightX!==undefined)meta.segmentRightX+=dx;
+              if(meta.segmentMidX!==undefined)meta.segmentMidX+=dx;
+            }
+          }
         }
-      }
-      for (let i = 0; i < blocks.length - 1; i++) {
-        const b1 = blocks[i];
-        const b2 = blocks[i+1];
-        const minGap = b1.w / 2 + SIBG + b2.w / 2;
-        const actualGap = b2.x - b1.x;
-        if (actualGap < minGap) {
-          resolved = false;
-          const overlap = minGap - actualGap;
-          b1.x -= overlap / 2;
-          b2.x += overlap / 2;
-        }
-      }
-
-      // Global Centering Force: Tightly pack everything while keeping the Anchor centered.
-      let minX = blocks[0].x - blocks[0].w / 2;
-      let maxX = blocks[blocks.length - 1].x + blocks[blocks.length - 1].w / 2;
-      let childrenCenter = (minX + maxX) / 2;
-      let shift = anchorCenter - childrenCenter;
-      if (Math.abs(shift) > 1) {
-          blocks.forEach(b => b.x += shift);
-          resolved = false;
       }
     }
-    
-    // 4. Apply drop lines and create UNION_META
-    const rightOffset = 14;
-    const leftOffset = 0;
-    let leftIdx = leftUnions.length - 1;
-    let rightIdx = 0;
-
-    blocks.forEach((b) => {
-      const u = b.u;
-      const isRight = b.isRight;
-      const sid = partnerOf(u, pid);
-      
-      const childCenterX = b.x;
-      const slotW = b.w;
-      const spouseX = b.spouseX;
-      
-      let localAnchorX;
-      let dropYOffset;
-      
-      if (isRight) {
-         localAnchorX = spouseX - SG / 2;
-         dropYOffset = rightOffset + (rightIdx * 14);
-         rightIdx++;
-      } else {
-         localAnchorX = spouseX + CW + SG / 2;
-         dropYOffset = leftOffset + (leftIdx * 14);
-         leftIdx--;
-      }
-
-      const childLeft = childCenterX - slotW / 2;
-      const childRight = childCenterX + slotW / 2;
-      
-      UNION_META[u.id] = {
-        left: Math.min(isRight ? anchorX : spouseX, childLeft),
-        right: Math.max(isRight ? spouseX + CW : anchorX + CW, childRight),
-        localAnchorX,
-        coupleMidX: b.coupleMidX,
-        childCenterX,
-        spouseY: y + CH/2,
-        dropYOffset,
-        dropY: y + CH + DROP_BASE_DEFAULT + dropYOffset,
-        anchorPid: pid,
-        spouseId: sid || '',
-        slotStart: childLeft
-      };
-      
-      _placeUnionChildren(u, pid, childCenterX, y, dropYOffset);
-    });
-
 
     return;
   }
@@ -4391,11 +4590,13 @@ function placePerson(pid, cx, y){
         if(i<kids.length-1) childCurX+=cw+siblingGapBetween(cid,kids[i+1]);
       });
       separateSiblingSubtrees(kids, childCenterX);
-      // Refresh the child-group center after subtree separation so connector jogs
-      // point to the final subtree span rather than only the immediate child cards.
-      const finalBounds=kids.map(cid=>subtreeBounds(cid)).filter(b=>b.left!==Infinity&&b.right!==-Infinity);
-      if(finalBounds.length){
-        UNION_META[u.id].childCenterX=(Math.min(...finalBounds.map(b=>b.left))+Math.max(...finalBounds.map(b=>b.right)))/2;
+      // Refresh childCenterX using immediate branch bounds (child card + spouses),
+      // so the parent couple centres over the full child-couple span, not just card centres.
+      const childBranches=kids.map(cid=>immediateBranchBounds(cid)).filter(b=>b.left!==Infinity);
+      if(childBranches.length){
+        const cLeft=Math.min(...childBranches.map(b=>b.left));
+        const cRight=Math.max(...childBranches.map(b=>b.right));
+        UNION_META[u.id].childCenterX=(cLeft+cRight)/2;
       }
     }
     // For a standard single-spouse family, keep the couple visually centered
@@ -4415,6 +4616,20 @@ function placePerson(pid, cx, y){
     }
     slotStart+=SG+slotW+SIBG;
   }
+}
+
+function immediateBranchBounds(pid){
+  if(!POS[pid]) return {left:Infinity,right:-Infinity};
+  let left=POS[pid].x;
+  let right=POS[pid].x+CW;
+  for(const u of layoutUnionsOf(pid)){
+    const sid=partnerOf(u,pid);
+    if(sid&&POS[sid]){
+      left=Math.min(left, POS[sid].x);
+      right=Math.max(right, POS[sid].x+CW);
+    }
+  }
+  return {left,right};
 }
 
 function subtreeBounds(pid, seen=new Set()){
@@ -4459,7 +4674,15 @@ function separateSiblingSubtrees(kids, childCenterX){
   let prevCid=null;
   for(const cid of kids){
     let b=subtreeBounds(cid);
-    const desiredGap=prevCid?siblingGapBetween(prevCid,cid):0;
+    let desiredGap=prevCid?siblingGapBetween(prevCid,cid):0;
+    // Extra gap between subtrees when previous sibling has spouses/children
+    if(prevCid&&desiredGap>0){
+      const prevUnions=layoutUnionsOf(prevCid);
+      if(prevUnions.length>0){
+        const prevHasDescendants=prevUnions.some(uu=>!COL[uu.id]&&unionChildrenOf(uu).length>0);
+        if(prevHasDescendants) desiredGap=Math.max(desiredGap,SIBG*2);
+      }
+    }
     if(b.left<prevRight+desiredGap){
       shiftSubtree(cid,prevRight+desiredGap-b.left);
       b=subtreeBounds(cid);
@@ -4477,10 +4700,7 @@ function separateSiblingSubtrees(kids, childCenterX){
 function visualUnionOrderOf(pid){
   const myUnions=layoutUnionsOf(pid);
   if(myUnions.length<=1) return myUnions;
-  const nRight=Math.ceil(myUnions.length/2);
-  const rightUnions=myUnions.slice(0,nRight);
-  const leftUnions=myUnions.slice(nRight);
-  return [...leftUnions].reverse().concat(rightUnions);
+  return [...myUnions].sort((a,b)=>(a.order||0)-(b.order||0));
 }
 
 function unionChildBounds(u){
@@ -4551,6 +4771,7 @@ function normalizeGenerationY(){
     const anchorY=POS[anchorPid].y;
     const offset = meta.dropYOffset || 0;
     meta.spouseY=anchorY+CH/2;
+    if(meta.underlineY!==undefined) meta.underlineY=anchorY+CH+20;
     if(!COL[u.id]&&u.ch.length){
       const kids=unionChildrenOf(u);
       const childYs=kids.map(c=>POS[c]).filter(Boolean).map(p=>p.y);
@@ -4589,27 +4810,36 @@ function layout(){
   for(const pid of rs) {
     centreRootOverDescendants(pid);
   }
+
 }
 
 function centreRootOverDescendants(pid){
   const myUnions=layoutUnionsOf(pid);
-  if (myUnions.length > 1) return;
   if(!myUnions.length||!POS[pid]) return;
 
-  // Measure the combined left/right extent of every child subtree
+  // Measure the span of every direct child's immediate branch (child card + spouses).
+  // Using immediateBranchBounds (not full subtree) keeps parents centred over their
+  // direct children only, not all descendants.
   let lo=Infinity, hi=-Infinity;
+  let childrenCentreX=null;
   for(const u of myUnions){
     if(COL[u.id]) continue;
     for(const cid of unionChildrenOf(u)){
-      const b=subtreeBounds(cid);
-      if(b.left <lo) lo=b.left;
+      const b=immediateBranchBounds(cid);
+      if(b.left<lo) lo=b.left;
       if(b.right>hi) hi=b.right;
     }
   }
-  if(lo===Infinity) return; // no visible children — nothing to centre over
+  if(lo!==Infinity) childrenCentreX=(lo+hi)/2;
+  if(childrenCentreX===null) return; // no visible children — nothing to centre over
 
-  const childrenCentreX=(lo+hi)/2;
-  const anchorCentreX=POS[pid].x+CW/2;
+  // Use the midpoint of the full parent cluster (anchor + all spouses)
+  let clusterLeft=POS[pid].x, clusterRight=POS[pid].x+CW;
+  for(const u of myUnions){
+    const sid=partnerOf(u,pid);
+    if(sid&&POS[sid]){clusterLeft=Math.min(clusterLeft,POS[sid].x);clusterRight=Math.max(clusterRight,POS[sid].x+CW);}
+  }
+  const anchorCentreX=(clusterLeft+clusterRight)/2;
   const dx=childrenCentreX-anchorCentreX;
   if(Math.abs(dx)<1) return;
 
@@ -4625,6 +4855,9 @@ function centreRootOverDescendants(pid){
       meta.left        +=dx;
       meta.right       +=dx;
       meta.slotStart   +=dx;
+      if(meta.segmentLeftX!==undefined) meta.segmentLeftX+=dx;
+      if(meta.segmentRightX!==undefined) meta.segmentRightX+=dx;
+      if(meta.segmentMidX!==undefined) meta.segmentMidX+=dx;
     }
   }
 
@@ -4732,7 +4965,29 @@ function render(){
     const meta=UNION_META[u.id];if(!meta)continue;
     const tog=document.createElement('div');
     tog.className='tog'+(COL[u.id]?' col':'');
-    tog.style.left=(meta.localAnchorX-10)+'px';tog.style.top=(meta.spouseY+CH/2+16)+'px';
+    let togX,togY;
+    if(meta.spouseCount>1){
+      // Dynamically compute segment midpoint from final positions
+      const anc=meta.anchorPid?POS[meta.anchorPid]:null;
+      const sps=meta.spouseId?POS[meta.spouseId]:null;
+      if(anc&&sps){
+        const allU2=U.filter(uu=>{const mm=UNION_META[uu.id];return mm&&mm.anchorPid===meta.anchorPid&&mm.spouseCount>1;});
+        allU2.sort((a2,b2)=>(a2.order||0)-(b2.order||0));
+        const idx2=allU2.findIndex(uu=>uu.id===u.id);
+        let lCX;
+        if(idx2<=0){lCX=anc.x+CW/2;}else{
+          const pU=allU2[idx2-1];const pSid=UNION_META[pU.id]?UNION_META[pU.id].spouseId:null;
+          lCX=(pSid&&POS[pSid])?(POS[pSid].x+CW/2):(anc.x+CW/2);
+        }
+        const rCX=sps.x+CW/2;
+        togX=(lCX+rCX)/2-10;
+      } else {togX=meta.localAnchorX-10;}
+      togY=meta.spouseY+CH/2+16;
+    } else {
+      togX=meta.localAnchorX-10;
+      togY=meta.spouseY+CH/2+16;
+    }
+    tog.style.left=togX+'px';tog.style.top=togY+'px';
     tog.textContent=COL[u.id]?'+':'−';
     tog.onclick=()=>{COL[u.id]=!COL[u.id];render();};
     vp.appendChild(tog);
@@ -4805,30 +5060,44 @@ function drawLines(svg){
     // Each union draws from its own local anchor so later spouses do not look
     // visually chained through earlier spouse regions.
     if(spouse){
-      // If 1 or 2 spouses, use side-by-side gold lines. 
-      // If 3 or more spouses, use the underneath black bracket.
-      if (meta.spouseCount > 2) {
-         const bracketY = anchor.y + CH + 27; // Center of the toggle button
-         
-         // Anchor to bracket bottom (BLACK)
-         L(anchor.x + CW/2, uy, anchor.x + CW/2, bracketY, '#2c2420', 1.5);
-         // Spouse to bracket bottom (BLACK)
-         L(spouse.x + CW/2, uy, spouse.x + CW/2, bracketY, '#2c2420', 1.5);
-         // Horizontal bracket connecting them (forms a continuous bus for multiple spouses) (BLACK)
-         const bracketLeftX = Math.min(anchor.x + CW/2, spouse.x + CW/2);
-         const bracketRightX = Math.max(anchor.x + CW/2, spouse.x + CW/2);
-         L(bracketLeftX, bracketY, bracketRightX, bracketY, '#2c2420', 1.5);
-         
-         meta.childDropStartY = bracketY;
+      if (meta.spouseCount > 1) {
+         // Multi-spouse: dynamically compute segment from FINAL card positions
+         const ulY=anchor.y+CH+20;
+         // Find this union's index and the previous card
+         const anchorPid=meta.anchorPid;
+         const allUnions=U.filter(uu=>{const mm=UNION_META[uu.id];return mm&&mm.anchorPid===anchorPid&&mm.spouseCount>1;});
+         allUnions.sort((a,b)=>(a.order||0)-(b.order||0));
+         const myIdx=allUnions.findIndex(uu=>uu.id===u.id);
+         let leftCardCX;
+         if(myIdx<=0){
+           leftCardCX=anchor.x+CW/2; // first segment: left card is anchor
+         } else {
+           const prevU=allUnions[myIdx-1];
+           const prevSid=UNION_META[prevU.id]?UNION_META[prevU.id].spouseId:null;
+           leftCardCX=(prevSid&&POS[prevSid])?(POS[prevSid].x+CW/2):(anchor.x+CW/2);
+         }
+         const rightCardCX=spouse.x+CW/2;
+         const segMidX=(leftCardCX+rightCardCX)/2;
+         // Vertical gold from left card bottom to underline
+         L(leftCardCX, anchor.y+CH, leftCardCX, ulY, '#b8923a', 2);
+         // Vertical gold from spouse bottom to underline
+         L(rightCardCX, spouse.y+CH, rightCardCX, ulY, '#b8923a', 2);
+         // Horizontal gold segment on the underline
+         L(leftCardCX, ulY, rightCardCX, ulY, '#b8923a', 2);
+         meta.unionDropX=segMidX;
+         meta.childDropStartY=ulY;
       } else {
+         // Single spouse: standard side-by-side gold line
          const leftCard=anchor.x<=spouse.x?anchor:spouse;
          const rightCard=leftCard===anchor?spouse:anchor;
          L(leftCard.x+CW,uy,meta.localAnchorX,uy,'#b8923a',2);
          L(meta.localAnchorX,uy,rightCard.x,uy,'#b8923a',2.5);
-         meta.childDropStartY = uy;
+         meta.unionDropX=meta.localAnchorX;
+         meta.childDropStartY=uy;
       }
     } else {
-      meta.childDropStartY = uy;
+      meta.unionDropX=meta.localAnchorX;
+      meta.childDropStartY=uy;
     }
     
     if(!COL[u.id]&&u.ch.length){
@@ -4836,14 +5105,15 @@ function drawLines(svg){
       const kids=unionChildrenOf(u);
       const cxs=kids.map(c=>POS[c]).filter(Boolean).map(p=>p.x+CW/2);
       if(!cxs.length)continue;
-      // Vertical drop from the couple connector
-      L(meta.localAnchorX, meta.childDropStartY, meta.localAnchorX, dropY, '#2c2420', 1.5);
+      // Vertical drop from this union's couple midpoint
+      const dropX=meta.unionDropX;
+      L(dropX, meta.childDropStartY, dropX, dropY, '#2c2420', 1.5);
       // Sibling bar spans only actual child card positions — never bleeds into a
       // neighbouring union's territory (fixes the "connected" visual between unions).
       const barL=Math.min(...cxs), barR=Math.max(...cxs);
       // Clamp the horizontal jog end-point within the bar so we don't overshoot
-      const joinX=Math.max(barL,Math.min(barR,meta.localAnchorX));
-      if(Math.abs(joinX-meta.localAnchorX)>0.5)L(meta.localAnchorX,dropY,joinX,dropY,'#2c2420',1.5);
+      const joinX=Math.max(barL,Math.min(barR,dropX));
+      if(Math.abs(joinX-dropX)>0.5)L(dropX,dropY,joinX,dropY,'#2c2420',1.5);
       if(cxs.length>1)L(barL,dropY,barR,dropY,'#2c2420',1.5);
       else if(Math.abs(joinX-cxs[0])>0.5)L(joinX,dropY,cxs[0],dropY,'#2c2420',1.5);
       for(const c of kids){const cp=POS[c];if(!cp)continue;L(cp.x+CW/2,dropY,cp.x+CW/2,cp.y,'#2c2420',1.5);}
@@ -6014,6 +6284,40 @@ function redoEdit(){
 let sc=1,tx=30,ty=20,panning=false,lx=0,ly=0,pd=null;
 function applyT(){const vp=document.getElementById('tvp');vp.style.transform=`translate(${tx}px,${ty}px) scale(${sc})`;document.getElementById('zpct').textContent=Math.round(sc*100)+'%';}
 function tzoom(d){sc=Math.min(3,Math.max(0.15,sc+d));applyT();}
+
+// ── Mobile UX helpers ──────────────────────────────────────────────────────
+function toggleMobMeta(){
+  const meta=document.querySelector('.hdr-meta');
+  if(!meta) return;
+  meta.classList.toggle('mob-open');
+  const btn=document.getElementById('mob-meta-toggle');
+  if(btn) btn.textContent=meta.classList.contains('mob-open')?'✕':'⚙';
+}
+
+function dismissNotice(id){
+  const el=document.getElementById(id);
+  if(!el) return;
+  el.style.display='none';
+  try{ localStorage.setItem('notice-dismissed-'+id,'1'); }catch(e){}
+}
+
+function restoreNoticeDismiss(){
+  ['family-reminder','sync-reminder'].forEach(id=>{
+    try{
+      if(localStorage.getItem('notice-dismissed-'+id)==='1'){
+        const el=document.getElementById(id);
+        if(el) el.style.display='none';
+      }
+    }catch(e){}
+  });
+}
+// Run on load
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded', restoreNoticeDismiss);
+} else {
+  restoreNoticeDismiss();
+}
+// ── End mobile UX helpers ──────────────────────────────────────────────────
 function tfit(){
   const canvas=document.getElementById('tcanvas');
   const people=Object.values(POS||{});
