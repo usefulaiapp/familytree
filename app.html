@@ -4049,7 +4049,7 @@ function nextUnionId(){
 const CW_NORMAL_DEFAULT=140,CW_NORMAL_MEDIUM=128,CW_NORMAL_COMPACT=116;
 const CW_PHOTO_DEFAULT=200,CW_PHOTO_MEDIUM=184,CW_PHOTO_COMPACT=168;
 const CH=82;
-const SG_DEFAULT=30,SIBG_DEFAULT=24,GH_DEFAULT=172,ROOT_START_X_DEFAULT=80,ROOT_START_Y_DEFAULT=70,ROOT_GAP_DEFAULT=48,DROP_BASE_DEFAULT=88,SIBLING_COUPLE_GAP_DEFAULT=8;
+const SG_DEFAULT=22,SIBG_DEFAULT=10,GH_DEFAULT=172,ROOT_START_X_DEFAULT=80,ROOT_START_Y_DEFAULT=70,ROOT_GAP_DEFAULT=40,DROP_BASE_DEFAULT=88,SIBLING_COUPLE_GAP_DEFAULT=4;
 let SG=SG_DEFAULT,SIBG=SIBG_DEFAULT,GH=GH_DEFAULT,ROOT_START_X=ROOT_START_X_DEFAULT,ROOT_START_Y=ROOT_START_Y_DEFAULT,ROOT_GAP=ROOT_GAP_DEFAULT;
 let CW=CW_NORMAL_DEFAULT;
 const COL={};
@@ -4697,7 +4697,7 @@ function separateSiblingSubtrees(kids, childCenterX){
       const prevUnions=layoutUnionsOf(prevCid);
       if(prevUnions.length>0){
         const prevHasDescendants=prevUnions.some(uu=>!COL[uu.id]&&unionChildrenOf(uu).length>0);
-        if(prevHasDescendants) desiredGap=Math.max(desiredGap,SIBG*2);
+        if(prevHasDescendants) desiredGap=Math.max(desiredGap,SIBG);
       }
     }
     if(b.left<prevRight+desiredGap){
