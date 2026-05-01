@@ -856,79 +856,79 @@ body.header-compact .zpct{
 
 /* ── Landscape phone: height-constrained (e.g. iPhone horizontal) ── */
 @media(max-height:500px) and (orientation:landscape){
-  /* Single-row header: everything in one line, no wrapping */
+  /* Collapse header into a single compact row */
   header{
-    min-height:0;
-    flex-wrap:nowrap;
-    align-items:center;
-    padding:4px 12px;
-    gap:8px;
+    min-height:0!important;
+    flex-wrap:nowrap!important;
+    align-items:center!important;
+    padding:3px 12px!important;
+    gap:8px!important;
+    position:relative;
   }
-  .site-brand{flex-shrink:0}
+  .site-brand{flex-shrink:0;order:0}
   .site-title{font-size:13px}
-  .ver-badge{display:none}
-  /* Nav tabs inline with header */
+  .ver-badge{display:none!important}
+  /* Nav tabs: inline in same row */
   .main-nav{
-    order:0;
-    flex:1 1 auto;
+    order:1!important;
+    flex:1 1 auto!important;
     min-width:0;
     overflow-x:auto;
     padding:0;
+    padding-top:0!important;
   }
-  .nav-btn{font-size:12px;padding:4px 8px}
-  /* hdr-r: collapse to just the toggle, inline */
+  .nav-btn{font-size:12px;padding:3px 8px}
+  /* hdr-r: single row, right-aligned */
   .hdr-r{
-    flex-direction:row;
-    align-items:center;
-    gap:6px;
-    margin-left:0;
+    order:2!important;
+    flex-direction:row!important;
+    align-items:center!important;
+    gap:6px!important;
+    margin-left:0!important;
+    flex-shrink:0;
   }
   .hdr-actions{gap:6px}
-  /* Hide heavy action buttons; keep login/join/toggle */
-  .hdr-actions .hbtn:not(#hdr-login):not(#hdr-join):not(#lang-btn):not(#mob-meta-toggle){display:none!important}
-  /* Collapse hdr-meta by default */
-  .hdr-meta{
-    position:absolute;
-    top:100%;
-    right:0;
-    background:var(--p2);
-    border:1px solid var(--bd);
-    border-radius:0 0 8px 8px;
-    padding:6px 12px;
+  /* Hide non-essential buttons */
+  .hdr-actions .font-ctl{display:none!important}
+  #hdr-guide{display:none!important}
+  /* Show ⚙ toggle */
+  #mob-meta-toggle{display:inline-flex!important}
+  /* hdr-meta: hidden by default, drops down on toggle */
+  .hdr-meta{display:none!important}
+  .hdr-meta.mob-open{
+    display:flex!important;
     flex-direction:row;
     flex-wrap:wrap;
+    position:absolute;
+    top:calc(100% + 1px);
+    right:8px;
+    background:var(--p2);
+    border:1px solid var(--bd);
+    border-radius:0 0 10px 10px;
+    padding:8px 12px;
     gap:6px;
-    z-index:50;
-    box-shadow:0 4px 12px rgba(0,0,0,.08);
-    max-height:0;
-    overflow:hidden;
-    transition:max-height .2s ease, padding .2s ease;
+    z-index:200;
+    box-shadow:0 6px 18px rgba(0,0,0,.10);
+    min-width:220px;
+    align-items:center;
   }
-  .hdr-meta.mob-open{
-    max-height:120px;
-    padding:6px 12px;
-  }
-  /* Make header relative so dropdown positions correctly */
-  header{position:relative}
   /* Toolbar: thin single scrollable row */
   .tree-tb{
     flex-wrap:nowrap!important;
-    overflow-x:auto;
+    overflow-x:auto!important;
     -webkit-overflow-scrolling:touch;
     scrollbar-width:none;
-    padding:4px 8px 6px;
-    gap:5px;
+    padding:3px 8px 5px!important;
+    gap:5px!important;
   }
   .tree-tb::-webkit-scrollbar{display:none}
-  .tbtn{height:28px;font-size:11px}
-  .srch{flex:0 0 auto!important;max-width:120px!important}
-  .srch input{width:96px!important;font-size:11px}
+  .tbtn{height:26px!important;font-size:11px!important}
+  .srch{flex:0 0 auto!important;max-width:110px!important}
+  .srch input{width:86px!important;font-size:11px!important}
   .tb-spacer{display:flex!important;flex:0 0 4px!important;min-width:0!important}
   .tb-right{width:auto!important;margin-left:auto!important;flex-shrink:0}
-  /* Auto-hide notices in landscape — space is critical */
+  /* Auto-hide notices — no vertical space */
   #family-reminder,.sync-reminder-bar{display:none!important}
-  /* Show ⚙ toggle */
-  #mob-meta-toggle{display:inline-flex!important}
 }
 
 /* ── Mobile canvas-first layout (≤ 640px portrait) ── */
@@ -1006,10 +1006,27 @@ body.header-compact .zpct{
   }
 }
 
-/* Desktop: hide mobile-only elements */
-@media(min-width:641px){
+/* Desktop (wide AND tall): hide mobile-only elements.
+   The min-height:501px exclusion keeps landscape phones working. */
+@media(min-width:641px) and (min-height:501px){
   #mob-meta-toggle{display:none!important}
   .notice-dismiss{display:none!important}
+}
+
+/* Toolbar scroll-hint: right fade on mobile */
+@media(max-width:640px){
+  .page.on{position:relative}
+  .tree-tb::after{
+    content:'';
+    position:sticky;
+    right:0;
+    top:0;
+    bottom:0;
+    width:28px;
+    flex-shrink:0;
+    background:linear-gradient(to right,transparent,var(--p2) 80%);
+    pointer-events:none;
+  }
 }
 
 
@@ -1146,7 +1163,7 @@ body.header-compact .zpct{
   </nav>
   <div class="hdr-r">
     <div class="hdr-actions">
-      <button id="mob-meta-toggle" onclick="toggleMobMeta()" title="更多選項" style="display:none">⚙</button>
+      <button id="mob-meta-toggle" onclick="toggleMobMeta()" title="更多選項">⚙</button>
       <div class="font-ctl">
         <span class="font-lbl" id="font-size-lbl">字體大小</span>
         <select class="font-sel" id="font-size-select" onchange="setFontSizeMode(this.value)">
@@ -6302,13 +6319,19 @@ function dismissNotice(id){
 }
 
 function restoreNoticeDismiss(){
+  const isMobile=window.innerWidth<=640;
   ['family-reminder','sync-reminder'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el) return;
     try{
-      if(localStorage.getItem('notice-dismissed-'+id)==='1'){
-        const el=document.getElementById(id);
-        if(el) el.style.display='none';
+      // On mobile: auto-hide notices (user can re-read via ⚙ menu if needed)
+      // On desktop: hide only if previously dismissed
+      if(isMobile || localStorage.getItem('notice-dismissed-'+id)==='1'){
+        el.style.display='none';
       }
-    }catch(e){}
+    }catch(e){
+      if(isMobile) el.style.display='none';
+    }
   });
 }
 // Run on load
