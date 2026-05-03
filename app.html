@@ -5697,6 +5697,7 @@ function buildViewPanel(pid){
       <div class="rp-field"><span class="rp-k">${zh?'出生日期':'Birth'}</span><div class="rp-val-wrap"><span class="rp-v">${p.birth||empty}</span></div></div>
       <div class="rp-field"><span class="rp-k">${zh?'離世日期':'Death'}</span><div class="rp-val-wrap"><span class="rp-v">${p.death||empty}</span></div></div>
       <div class="rp-field"><span class="rp-k">${zh?'兄弟姊妹排序':'Sibling Rank'}</span><div class="rp-val-wrap"><span class="rp-v">${p.siblingOrder||empty}</span></div></div>
+      <div class="rp-field"><span class="rp-k">${zh?'配偶排序':'Spouse Rank'}</span><div class="rp-val-wrap"><span class="rp-v">${(()=>{const su=layoutUnionsOf(pid).sort((a,b)=>(a.order||0)-(b.order||0));if(!su.length)return empty;if(su.length===1)return su[0].order!=null?String(su[0].order):empty;return su.map(u=>{const sid=u.a===pid?u.b:u.a;const sp=P[sid];const nm=sp?(zh?sp.zh:sp.en):'?';const n=u.order!=null?u.order:'—';return `${nm}: ${n}`;}).join('　');})()}</span></div></div>
       <div class="rp-field"><span class="rp-k">${zh?'電郵':'Email'}</span><div class="rp-val-wrap"><span class="rp-v">${p.email||empty}</span></div></div>
       <div class="rp-field"><span class="rp-k">${zh?'電話':'Phone'}</span><div class="rp-val-wrap"><span class="rp-v">${p.phone||empty}</span></div></div>
       <div class="rp-field"><span class="rp-k">${zh?'職業':'Occupation'}</span><div class="rp-val-wrap"><span class="rp-v">${occ||empty}</span></div></div>
@@ -5774,7 +5775,8 @@ function buildEditPanel(pid){
   const zh=LANG==='zh';
   editData={zh:p.zh,en:p.en,g:p.g,birth:flexibleDateValue(p.birth),death:flexibleDateValue(p.death),birthOrig:p.birth||'',deathOrig:p.death||'',siblingOrder:p.siblingOrder||'',email:p.email,phone:p.phone,oz:p.oz,oe:p.oe,photo:p.photo||'',sz:p.sz,se:p.se,
     fatherId:father?.id||null, motherId:mother?.id||null,
-    spouseIds:spouses.map(s=>s.id), childIds:children.map(c=>c.id)};
+    spouseIds:spouses.map(s=>s.id), childIds:children.map(c=>c.id),
+    unionOrders:Object.fromEntries(layoutUnionsOf(pid).map(u=>[u.id,u.order!=null?String(u.order):'']))};
 
   document.getElementById('rp-body').innerHTML=`
     <div class="rp-sec">${zh?'編輯基本資料':'Edit Basic Info'}</div>
@@ -5784,6 +5786,7 @@ function buildEditPanel(pid){
       <div class="rp-field"><span class="rp-k">${zh?'性別':'Gender'}</span><div class="rp-val-wrap"><div class="rp-gbts"><button class="rp-gbt m${p.g==='m'?' on':''}" onclick="editData.g='m';this.classList.add('on');this.nextSibling.classList.remove('on');refreshEditPhotoUi()">${zh?'♂ 男':'♂ Male'}</button><button class="rp-gbt f${p.g==='f'?' on':''}" onclick="editData.g='f';this.classList.add('on');this.previousSibling.classList.remove('on');refreshEditPhotoUi()">${zh?'♀ 女':'♀ Female'}</button></div></div></div>
       <div class="rp-field"><span class="rp-k">${zh?'出生日期':'Birth'}</span><div class="rp-val-wrap"><input class="rp-ef" id="rp-edit-birth" type="text" value="${hesc(flexibleDateValue(p.birth))}" placeholder="${hesc(flexibleDatePlaceholder())}" autocomplete="off" spellcheck="false" oninput="editData.birth=this.value">${legacyDateNotice(p.birth)}</div></div>
       <div class="rp-field"><span class="rp-k">${zh?'兄弟姊妹排序':'Sibling Rank'}</span><div class="rp-val-wrap"><input class="rp-ef" type="number" value="${hesc(p.siblingOrder||'')}" min="1" step="1" placeholder="${hesc(zh?'例如 1, 2, 3':'e.g. 1, 2, 3')}" oninput="editData.siblingOrder=this.value"></div></div>
+      <div class="rp-field" style="align-items:flex-start"><span class="rp-k" style="padding-top:4px">${zh?'配偶排序':'Spouse Rank'}</span><div class="rp-val-wrap">${(()=>{const su=layoutUnionsOf(pid).sort((a,b)=>(a.order||0)-(b.order||0));if(!su.length)return `<span style="opacity:.4">${zh?'無配偶':'No spouse'}</span>`;return su.map(u=>{const sid=u.a===pid?u.b:u.a;const sp=P[sid];const nm=sp?(zh?sp.zh:sp.en):'?';const prefix=su.length>1?`<span style="font-size:var(--fs-panel-key);color:var(--ink3);white-space:nowrap;margin-right:6px">${nm}:</span>`:'';return `<div style="display:flex;align-items:center;margin-bottom:${su.length>1?'4':'0'}px">${prefix}<input class="rp-ef" type="number" value="${hesc(String(u.order!=null?u.order:''))}" min="1" step="1" style="width:80px" placeholder="1" oninput="editData.unionOrders=editData.unionOrders||{};editData.unionOrders['${u.id}']=this.value"></div>`;}).join('');})()}</div></div>
       <div class="rp-field"><span class="rp-k">${zh?'離世日期':'Death'}</span><div class="rp-val-wrap"><input class="rp-ef" id="rp-edit-death" type="text" value="${hesc(flexibleDateValue(p.death))}" placeholder="${hesc(flexibleDatePlaceholder())}" autocomplete="off" spellcheck="false" oninput="editData.death=this.value">${legacyDateNotice(p.death)}</div></div>
       <div class="rp-field"><span class="rp-k">${zh?'電郵':'Email'}</span><div class="rp-val-wrap"><input class="rp-ef" type="email" value="${p.email||''}" oninput="editData.email=this.value"></div></div>
       <div class="rp-field"><span class="rp-k">${zh?'電話':'Phone'}</span><div class="rp-val-wrap"><input class="rp-ef" value="${p.phone||''}" oninput="editData.phone=this.value"></div></div>
@@ -5915,6 +5918,15 @@ function saveEdit(){
   p.birth=normalizeEditableDate(editData.birth,editData.birthOrig);
   p.death=normalizeEditableDate(editData.death,editData.deathOrig);
   p.siblingOrder=String(editData.siblingOrder||'').trim();
+  // Apply union order changes
+  if(editData.unionOrders){
+    Object.entries(editData.unionOrders).forEach(([uid,val])=>{
+      const u=U.find(uu=>uu.id===uid);
+      if(!u) return;
+      const n=Number(val);
+      if(val!==''&&Number.isFinite(n)) u.order=n;
+    });
+  }
   p.email=editData.email!==undefined?editData.email:(p.email||'');
   p.phone=editData.phone!==undefined?editData.phone:(p.phone||'');
   p.oz=editData.oz!==undefined?editData.oz:p.oz;
