@@ -1701,7 +1701,7 @@ const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/res
 // drive.file lets the app create/update its own files and also access files
 // the user explicitly opens with Google Picker, without requesting blanket
 // read access to all of Drive.
-const SCOPES = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive.readonly';
+const SCOPES = 'https://www.googleapis.com/auth/drive.file';
 const FONT_SIZE_STORAGE_KEY='family-font-size-mode';
 const APP_STATE_STORAGE_KEY='family-heritage-app-state';
 const LEGAL_ACK_KEY = 'family-heritage-legal-ack-v1';
@@ -2560,27 +2560,16 @@ async function requestDriveTokenAndLoad(options = {}) {
     return 'not_ready';
   }
 
-  // For join-link loads (shared tree from a different owner), always request a
-  // fresh token so the full scope set (drive.file + drive.readonly) is guaranteed.
-  // A cached token from a prior session may have been issued under a narrower scope.
-  // For owner / returning-user loads, reuse the existing in-session token as a
-  // fast path — they already have the full scopes from this session's sign-in.
-  const isJoinLinkLoad = !!(options.preferredFileId && options.preferredFileId !== TREE_META.privateTreeFileId);
+  // Reuse existing token if available — drive.file scope is sufficient for all operations.
   const existingToken = gapi.client.getToken();
-  if (existingToken && !isJoinLinkLoad) {
+  if (existingToken) {
     console.log('[Drive] Token already present — proceeding to load.');
     return loadAllDataFromDrive(options);
-  }
-  if (existingToken && isJoinLinkLoad) {
-    // Drop the cached token so requestAccessToken issues a new one with the
-    // full scope set. prompt:'' is silent when the user already consented.
-    try { gapi.client.setToken(null); } catch(e) { /* safe to ignore */ }
-    console.log('[Drive] Join-link load — clearing cached token to ensure drive.readonly scope.');
   }
 
   driveLoadState = 'requesting_token';
   showDriveLoadBanner('requesting_token');
-  console.log('[Drive] Requesting OAuth2 token for Drive (drive.file + drive.readonly)…');
+  console.log('[Drive] Requesting OAuth2 token for Drive (drive.file)…');
 
   // Assign callback immediately before requesting — this is the safe pattern
   // recommended for GIS token clients where the callback must be current.
