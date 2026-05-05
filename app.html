@@ -1015,7 +1015,8 @@ body.header-compact .zpct{
 
 /* Toolbar scroll-hint: right fade on mobile */
 @media(max-width:640px){
-  .page.on{position:relative}
+  .pages{display:flex;flex-direction:column}
+  .page.on{position:relative;flex:1;min-height:0}
   .tree-tb::after{
     content:'';
     position:sticky;
