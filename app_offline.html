@@ -6,8 +6,7 @@
 <meta name="robots" content="noindex,nofollow">
 <title>家族樹 · Family Tree</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500;600;700&family=Noto+Serif:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-<script src="https://accounts.google.com/gsi/client" async defer></script>
-<script src="https://apis.google.com/js/api.js" async defer></script>
+<!-- Google SDK removed: offline version makes no external data connections -->
 <style>
 :root{
   --p:#faf8f2;--p2:#f4f0e4;--p3:#e8dfc8;
@@ -1156,6 +1155,7 @@ body.header-compact .zpct{
     <button class="site-edit-btn" id="site-settings-btn" onclick="openSiteSettings()">✎</button>
   </div>
   <div class="ver-badge" id="ver-badge">v1.3.0</div>
+  <div class="ver-badge" style="background:var(--p3);color:var(--ink2);border-color:var(--bd2)" id="ol-badge">🔒 離線版</div>
   <nav class="main-nav">
     <button class="nav-btn on" onclick="goto('tree',this)" id="nav-tree">家族樹</button>
     <button class="nav-btn" onclick="goto('community',this)" id="nav-community">社群連結</button>
@@ -1175,16 +1175,12 @@ body.header-compact .zpct{
         </select>
       </div>
       <button class="hbtn" onclick="toggleLang()" id="lang-btn">EN</button>
-      <button class="hbtn" onclick="openTreeSwitcher()" id="hdr-tree-switch" style="display:none">切換/建立家族樹</button>
-      <button class="hbtn" onclick="window.open('guide.html', '_blank')" id="hdr-guide" style="color:var(--gold); font-weight:600;">📖 使用教學</button>
-      <button class="hbtn" onclick="openAuthLogin()" id="hdr-login">登入</button>
-      <button class="hbtn pri" onclick="openAuthJoin()" id="hdr-join">加入</button>
+      <button class="hbtn" onclick="document.getElementById('ol-file-input').click()" id="hdr-open-tree">📂 <span id="hdr-open-lbl">開啟家族樹</span></button>
+      <button class="hbtn pri" onclick="olSave()" id="hdr-save-tree">💾 <span id="hdr-save-lbl">儲存家族樹</span></button>
     </div>
     <div class="hdr-meta">
       <div class="stat-badge" id="people-count">總人數：0</div>
-      <button class="hbtn-meta" onclick="reloadCurrentTreeFromDrive()" id="hdr-drive-reload" style="display:none">從 Drive 重新載入</button>
-      <button class="hbtn-meta" onclick="handleDriveSaveClick()" id="hdr-manual-save" style="display:none">手動儲存</button>
-      <button class="hbtn-meta" onclick="openVersionHistory()" id="hdr-version-history" style="display:none">版本記錄</button>
+      <!-- Drive buttons removed: offline version -->
       <button class="hbtn-meta" onclick="undoEdit()" id="hdr-undo">復原</button>
       <button class="hbtn-meta" onclick="redoEdit()" id="hdr-redo">重做</button>
     </div>
@@ -4850,9 +4846,6 @@ function layout(){
   }
 
   // Final pass: correct any remaining overlap between root subtrees.
-  // measurePerson() estimates widths before gender-swap and centering adjustments,
-  // so actual subtree bounds can differ. Sweep left-to-right and push any
-  // overlapping subtree right until there is at least ROOT_GAP between them.
   let sweepRight = -Infinity;
   for(const pid of rs){
     const b = subtreeBounds(pid);
@@ -8020,6 +8013,104 @@ CloudStorage.loadAll()
 <div style="position:fixed;bottom:10px;right:10px;z-index:9999;opacity:0.3" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.3">
 </div>
 
-<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "02b8e565dab84ae79afc7171ee6848d0"}'></script><!-- End Cloudflare Web Analytics -->
+<!-- ══ OFFLINE ══ -->
+<input type="file" id="ol-file-input" accept=".json" style="display:none" onchange="olOpenFile(event)">
+
+<script>
+// ── Offline overrides ──────────────────────────────────────────
+function initGoogleAuth(){ console.log('[Offline] Google auth skipped'); }
+function restoreSessionAndInit(){
+  CURRENT_USER.isAuthenticated = false;
+  driveLoadState = 'idle';
+  applyStaticLang();
+  olUpdateLang();
+  renderCurrentPage();
+}
+// Hook into toggleLang so header buttons update too
+const _origToggleLang = toggleLang;
+toggleLang = function(){
+  _origToggleLang();
+  olUpdateLang();
+};
+function saveAllDataToDrive(){ /* offline: no auto-save — user clicks Save button manually */ }
+
+// ── Language update ────────────────────────────────────────────
+function olUpdateLang(){
+  const zh = LANG === 'zh';
+  document.getElementById('hdr-open-lbl').textContent  = zh ? '開啟家族樹' : 'Open Tree';
+  document.getElementById('hdr-save-lbl').textContent  = zh ? '儲存家族樹' : 'Save Tree';
+  document.getElementById('ol-badge').textContent      = zh ? '🔒 離線版' : '🔒 Offline';
+}
+
+// ── File open / save ────────────────────────────────────────────
+let olCurrentFilename = 'family_tree.json';
+
+async function olSave(){
+  try {
+    const data = exportPrivateTreeToJson();
+    const json = JSON.stringify(data, null, 2);
+    const blob = new Blob([json], {type:'application/json'});
+    // Use File System Access API (Chrome/Edge) for save dialog
+    if(window.showSaveFilePicker){
+      try {
+        const fh = await window.showSaveFilePicker({
+          suggestedName: olCurrentFilename,
+          types:[{description:'家族樹檔案 / Family Tree File',accept:{'application/json':['.json']}}]
+        });
+        const writable = await fh.createWritable();
+        await writable.write(blob);
+        await writable.close();
+        return;
+      } catch(e){ if(e.name==='AbortError') return; /* fell through to download */ }
+    }
+    // Fallback: auto-download
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = olCurrentFilename;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  } catch(e){ alert((LANG==='zh'?'儲存失敗：':'Save failed: ') + e.message); }
+}
+
+function olOpenFile(event){
+  const file = event.target.files[0];
+  if (!file) return;
+  olCurrentFilename = file.name;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try {
+      const data = JSON.parse(e.target.result);
+      for(const k in P) delete P[k];
+      U.length = 0;
+      for(const k in CMTS) delete CMTS[k];
+      COMM.length = 0;
+      for(const [id, jp] of Object.entries(data.persons || {})) P[id] = adaptPerson(jp);
+      (data.unions || []).forEach(ju => U.push(adaptUnion(ju)));
+      if(data.comments) Object.assign(CMTS, adaptComments(data.comments));
+      if(Array.isArray(data.community)) COMM.push(...data.community);
+      if(data.metadata){
+        if(data.metadata.familyName) Object.assign(TREE_META.familyName, data.metadata.familyName);
+        if(data.metadata.treeId) TREE_META.treeId = data.metadata.treeId;
+      }
+      CURRENT_TREE.members = data.members || [];
+      CURRENT_TREE.settings = data.settings || {};
+      CURRENT_TREE.isLoaded = true;
+      resolveUserRole();
+      applyStaticLang();
+      olUpdateLang();
+      document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+      const tp = document.getElementById('page-tree');
+      if(tp){ tp.classList.add('on'); curPage='tree'; }
+      render();
+      setTimeout(fitView, 100);
+    } catch(err){
+      alert((LANG==='zh'?'無法讀取檔案：':'Cannot read file: ') + err.message);
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+</script>
 </body>
 </html>

@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>在線版 vs 離線版 — 家族樹</title>
+  <meta name="description" content="比較家族樹在線版與離線版的功能差異，選擇最適合你的方案。在線版支援 Google Drive 雲端儲存與家人協作；離線版以本地 JSON 檔案保存資料，無需帳號，以單機使用為主。">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,700;1,700&family=Noto+Serif+TC:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="site.css">
+  <style>
+    /* ── Page hero ── */
+    .cmp-hero {
+      padding: 100px 0 64px;
+      text-align: center;
+      background: radial-gradient(circle at top, #f5f2e9 0%, var(--p) 70%);
+    }
+    .cmp-hero h1 { font-size: 48px; line-height: 1.15; margin-bottom: 20px; color: var(--ink); }
+    .cmp-hero p  { font-size: 19px; color: var(--ink2); max-width: 640px; margin: 0 auto; line-height: 1.75; }
+
+    /* ── Comparison layout ── */
+    .cmp-section { background: var(--p); }
+
+    .cmp-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+      margin-top: 56px;
+    }
+
+    /* ── Version cards ── */
+    .ver-card {
+      border-radius: 24px;
+      border: 1.5px solid var(--bd);
+      padding: 40px 36px 36px;
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+      box-shadow: 0 6px 24px rgba(44,36,32,0.05);
+      transition: box-shadow 0.25s ease, transform 0.25s ease;
+    }
+    .ver-card:hover {
+      box-shadow: 0 16px 40px rgba(44,36,32,0.10);
+      transform: translateY(-4px);
+    }
+
+    .ver-card.online  { border-color: rgba(90,125,154,0.35); }
+    .ver-card.offline { border-color: rgba(184,146,58,0.35); }
+
+    .ver-badge-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .ver-badge {
+      display: inline-block;
+      padding: 4px 14px;
+      border-radius: 99px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+    .ver-badge.online  { background: var(--mbg);  color: var(--mac); border: 1px solid rgba(90,125,154,0.25); }
+    .ver-badge.offline { background: var(--p3);   color: var(--gold3); border: 1px solid rgba(184,146,58,0.25); }
+
+    .ver-card h2 { font-size: 26px; margin-bottom: 6px; color: var(--ink); }
+    .ver-card .ver-tagline { font-size: 15px; color: var(--ink3); line-height: 1.6; }
+
+    /* Mock UI preview */
+    .ver-preview {
+      background: var(--p2);
+      border-radius: 16px;
+      border: 1px solid var(--bd);
+      height: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .ver-preview svg { max-width: 320px; width: 100%; height: 100%; }
+
+    /* Feature list */
+    .ver-features { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .ver-features li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 14.5px;
+      color: var(--ink2);
+      line-height: 1.55;
+    }
+    .ver-features li .feat-icon {
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .online  .feat-icon { background: var(--mbg); }
+    .offline .feat-icon { background: var(--p3); }
+
+    .ver-card .ver-cta {
+      margin-top: 4px;
+    }
+    .ver-card .btn {
+      width: 100%;
+      justify-content: center;
+      padding: 14px 28px;
+      font-size: 15px;
+      border-radius: 14px;
+    }
+    .dl-note { font-size: 12.5px; color: var(--ink3); margin-top: 10px; line-height: 1.5; text-align: center; }
+
+    /* ── Comparison table ── */
+    .cmp-table-section { background: var(--p2); }
+    .cmp-table-wrap { overflow-x: auto; margin-top: 48px; border-radius: 16px; border: 1px solid var(--bd); }
+    table.cmp-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14.5px;
+      background: #fff;
+    }
+    .cmp-table th, .cmp-table td {
+      padding: 16px 20px;
+      text-align: left;
+      border-bottom: 1px solid var(--bd);
+    }
+    .cmp-table tr:last-child td { border-bottom: none; }
+    .cmp-table thead th {
+      background: var(--p2);
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--ink3);
+    }
+    .cmp-table thead th:first-child { color: var(--ink); }
+    .cmp-table td:first-child { font-weight: 600; color: var(--ink); width: 36%; }
+    .cmp-table .yes  { color: #2a8c5d; font-weight: 600; }
+    .cmp-table .no   { color: var(--ink3); }
+    .cmp-table .note { color: var(--ink2); }
+    .cmp-table tbody tr:hover td { background: var(--p2); }
+
+    /* ── lang toggle on this page ── */
+    .lang-toggle {
+      display: flex;
+      background: var(--p2);
+      border: 1px solid var(--bd);
+      border-radius: 99px;
+      padding: 2px;
+      margin-left: 20px;
+    }
+    .lang-btn {
+      padding: 4px 12px;
+      border-radius: 99px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+      background: transparent;
+      color: var(--ink3);
+    }
+    .lang-btn.active {
+      background: #fff;
+      color: var(--ink);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      .cmp-hero h1 { font-size: 38px; }
+      .cmp-grid { gap: 20px; }
+      .ver-card  { padding: 32px 28px 28px; }
+    }
+
+    @media (max-width: 700px) {
+      .cmp-hero   { padding: 72px 0 48px; }
+      .cmp-hero h1 { font-size: 30px; }
+      .cmp-hero p  { font-size: 16px; }
+      .cmp-grid   { grid-template-columns: 1fr; }
+      .ver-preview { height: 160px; }
+      .cmp-table thead th:nth-child(2) { display: none; }
+    }
+
+    @media (max-width: 480px) {
+      .cmp-hero h1 { font-size: 26px; }
+      .ver-card  { padding: 24px 20px; border-radius: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="container nav-wrap">
+      <a href="index.html" class="logo" data-i18n="nav_brand">家族樹</a>
+      <nav class="nav-links">
+        <a href="index.html" class="nav-link" data-i18n="nav_home">首頁</a>
+        <a href="guide.html" class="nav-link" data-i18n="nav_guide">使用教學</a>
+        <a href="app.html" class="btn btn-pri" data-i18n="nav_app">開啟應用</a>
+        <div class="lang-toggle">
+          <button class="lang-btn" id="lang-zh-btn" onclick="setLang('zh')">ZH</button>
+          <button class="lang-btn" id="lang-en-btn" onclick="setLang('en')">EN</button>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ── Hero ── -->
+    <section class="cmp-hero">
+      <div class="container">
+        <h1 data-i18n="hero_title">在線版 還是 離線版？</h1>
+        <p data-i18n="hero_sub">兩個版本共用相同的家族樹功能。差別在於你如何儲存資料，以及是否與家人共享。</p>
+      </div>
+    </section>
+
+    <!-- ── Cards ── -->
+    <section class="cmp-section">
+      <div class="container">
+        <div class="cmp-grid">
+
+          <!-- Online card -->
+          <div class="ver-card online">
+            <div>
+              <div class="ver-badge-wrap">
+                <span class="ver-badge online" data-i18n="badge_online">🌐 在線版</span>
+              </div>
+              <h2 data-i18n="online_title">與家人一起保存記憶</h2>
+              <p class="ver-tagline" data-i18n="online_tagline">透過 Google Drive 雲端儲存，讓家人可以隨時在任何裝置上查看或協作。</p>
+            </div>
+
+            <!-- Online mock UI -->
+            <div class="ver-preview">
+              <svg viewBox="0 0 340 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- App chrome -->
+                <rect x="10" y="10" width="320" height="180" rx="12" fill="#fbfaf5" stroke="#e0d8c8" stroke-width="1.2"/>
+                <!-- Header bar -->
+                <rect x="10" y="10" width="320" height="32" rx="12" fill="#f3ead6"/>
+                <rect x="10" y="30" width="320" height="12" rx="0" fill="#f3ead6"/>
+                <circle cx="28" cy="26" r="5" fill="#b8923a" opacity="0.5"/>
+                <rect x="40" y="21" width="60" height="10" rx="3" fill="#b8923a" opacity="0.25"/>
+                <!-- Cloud icon top-right -->
+                <path d="M286 18 C282 18, 280 21, 282 23 C279 22, 276 25, 278 27 C274 26, 272 29, 274 31 L298 31 C300 29, 299 26, 296 25 C297 22, 294 19, 291 20 C290 18, 288 18, 286 18Z" fill="#5a7d9a" opacity="0.35"/>
+                <!-- Upload arrow -->
+                <line x1="287" y1="29" x2="287" y2="23" stroke="#5a7d9a" stroke-width="1.4" stroke-linecap="round" opacity="0.6"/>
+                <path d="M284 25 L287 22 L290 25" stroke="#5a7d9a" stroke-width="1.4" fill="none" stroke-linecap="round" opacity="0.6"/>
+
+                <!-- Tree nodes -->
+                <!-- Root -->
+                <circle cx="170" cy="60" r="13" fill="rgba(184,146,58,0.1)" stroke="#b8923a" stroke-width="1.8"/>
+                <circle cx="170" cy="56" r="5" fill="#b8923a" opacity="0.45"/>
+                <path d="M163 63 Q170 68 177 63" stroke="#b8923a" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+                <!-- Vert line -->
+                <line x1="170" y1="73" x2="170" y2="85" stroke="#c4b08a" stroke-width="1.5"/>
+                <!-- Horiz branch -->
+                <line x1="115" y1="85" x2="225" y2="85" stroke="#c4b08a" stroke-width="1.5"/>
+                <line x1="115" y1="85" x2="115" y2="95" stroke="#c4b08a" stroke-width="1.5"/>
+                <line x1="225" y1="85" x2="225" y2="95" stroke="#c4b08a" stroke-width="1.5"/>
+                <!-- Left child -->
+                <circle cx="115" cy="108" r="11" fill="rgba(154,96,96,0.1)" stroke="#c07878" stroke-width="1.5"/>
+                <circle cx="115" cy="104.5" r="4" fill="#c07878" opacity="0.4"/>
+                <path d="M109 111 Q115 115 121 111" stroke="#c07878" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+                <!-- Right child -->
+                <circle cx="225" cy="108" r="11" fill="rgba(90,125,154,0.1)" stroke="#5a7d9a" stroke-width="1.5"/>
+                <circle cx="225" cy="104.5" r="4" fill="#5a7d9a" opacity="0.4"/>
+                <path d="M219 111 Q225 115 231 111" stroke="#5a7d9a" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+                <!-- Share icon -->
+                <line x1="115" y1="119" x2="115" y2="130" stroke="#c4b08a" stroke-width="1.2"/>
+                <line x1="99"  y1="130" x2="131" y2="130" stroke="#c4b08a" stroke-width="1.2"/>
+                <circle cx="99"  cy="140" r="7" fill="rgba(184,146,58,0.08)" stroke="#c4b08a" stroke-width="1.2"/>
+                <circle cx="131" cy="140" r="7" fill="rgba(184,146,58,0.08)" stroke="#c4b08a" stroke-width="1.2"/>
+                <!-- Sharing label badge -->
+                <rect x="212" y="125" width="52" height="18" rx="9" fill="rgba(90,125,154,0.12)" stroke="#5a7d9a" stroke-width="1"/>
+                <text x="238" y="137.5" text-anchor="middle" font-size="8.5" fill="#5a7d9a" font-family="Inter,sans-serif" font-weight="600">SHARED</text>
+              </svg>
+            </div>
+
+            <!-- Features -->
+            <ul class="ver-features">
+              <li><span class="feat-icon">☁️</span><span data-i18n="online_f1">儲存至自己的 Google Drive，任何裝置皆可開啟</span></li>
+              <li><span class="feat-icon">👥</span><span data-i18n="online_f2">邀請家人成為協作編輯者（Editor）或只讀查看者（Viewer）</span></li>
+              <li><span class="feat-icon">🔄</span><span data-i18n="online_f3">在手機、平板、電腦之間同步共享同一棵家族樹</span></li>
+              <li><span class="feat-icon">🔑</span><span data-i18n="online_f4">需要 Google 帳號登入，資料存放於你自己的 Drive</span></li>
+              <li><span class="feat-icon">🖨️</span><span data-i18n="online_f5">匯出為圖片或 PDF</span></li>
+            </ul>
+
+            <div class="ver-cta">
+              <a href="app.html" class="btn btn-pri" data-i18n="online_cta">開啟在線版</a>
+            </div>
+          </div>
+
+          <!-- Offline card -->
+          <div class="ver-card offline">
+            <div>
+              <div class="ver-badge-wrap">
+                <span class="ver-badge offline" data-i18n="badge_offline">🔒 離線版</span>
+              </div>
+              <h2 data-i18n="offline_title">更私密，存於你的電腦</h2>
+              <p class="ver-tagline" data-i18n="offline_tagline">無需帳號，無需網絡。資料可由你自行另存為 JSON 檔案，保存到你選擇的電腦位置。</p>
+            </div>
+
+            <!-- Offline mock UI -->
+            <div class="ver-preview">
+              <svg viewBox="0 0 340 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- App chrome -->
+                <rect x="10" y="10" width="320" height="180" rx="12" fill="#fbfaf5" stroke="#e0d8c8" stroke-width="1.2"/>
+                <!-- Header bar -->
+                <rect x="10" y="10" width="320" height="32" rx="12" fill="#f3ead6"/>
+                <rect x="10" y="30" width="320" height="12" rx="0" fill="#f3ead6"/>
+                <circle cx="28" cy="26" r="5" fill="#b8923a" opacity="0.5"/>
+                <rect x="40" y="21" width="60" height="10" rx="3" fill="#b8923a" opacity="0.25"/>
+                <!-- Offline badge -->
+                <rect x="238" y="17" width="56" height="18" rx="9" fill="rgba(184,146,58,0.18)" stroke="rgba(184,146,58,0.35)" stroke-width="1"/>
+                <text x="266" y="29.5" text-anchor="middle" font-size="8" fill="#9a7a2e" font-family="Inter,sans-serif" font-weight="700">🔒 OFFLINE</text>
+
+                <!-- Save/Open buttons -->
+                <rect x="10" y="42" width="76" height="20" rx="0" fill="#f3ead6"/>
+                <rect x="12" y="44" width="34" height="14" rx="7" fill="#ede8d5" stroke="#c4b08a" stroke-width="1"/>
+                <text x="29" y="53.5" text-anchor="middle" font-size="7.5" fill="#5a4e46" font-family="Inter,sans-serif" font-weight="600">📂 開啟</text>
+                <rect x="50" y="44" width="34" height="14" rx="7" fill="#b8923a"/>
+                <text x="67" y="53.5" text-anchor="middle" font-size="7.5" fill="#fff" font-family="Inter,sans-serif" font-weight="600">💾 儲存</text>
+
+                <!-- Tree nodes (same layout) -->
+                <circle cx="170" cy="60" r="13" fill="rgba(184,146,58,0.1)" stroke="#b8923a" stroke-width="1.8"/>
+                <circle cx="170" cy="56" r="5" fill="#b8923a" opacity="0.45"/>
+                <path d="M163 63 Q170 68 177 63" stroke="#b8923a" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+                <line x1="170" y1="73" x2="170" y2="85" stroke="#c4b08a" stroke-width="1.5"/>
+                <line x1="115" y1="85" x2="225" y2="85" stroke="#c4b08a" stroke-width="1.5"/>
+                <line x1="115" y1="85" x2="115" y2="95" stroke="#c4b08a" stroke-width="1.5"/>
+                <line x1="225" y1="85" x2="225" y2="95" stroke="#c4b08a" stroke-width="1.5"/>
+                <circle cx="115" cy="108" r="11" fill="rgba(154,96,96,0.1)" stroke="#c07878" stroke-width="1.5"/>
+                <circle cx="115" cy="104.5" r="4" fill="#c07878" opacity="0.4"/>
+                <path d="M109 111 Q115 115 121 111" stroke="#c07878" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+                <circle cx="225" cy="108" r="11" fill="rgba(90,125,154,0.1)" stroke="#5a7d9a" stroke-width="1.5"/>
+                <circle cx="225" cy="104.5" r="4" fill="#5a7d9a" opacity="0.4"/>
+                <path d="M219 111 Q225 115 231 111" stroke="#5a7d9a" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+                <line x1="115" y1="119" x2="115" y2="130" stroke="#c4b08a" stroke-width="1.2"/>
+                <line x1="99"  y1="130" x2="131" y2="130" stroke="#c4b08a" stroke-width="1.2"/>
+                <circle cx="99"  cy="140" r="7" fill="rgba(184,146,58,0.08)" stroke="#c4b08a" stroke-width="1.2"/>
+                <circle cx="131" cy="140" r="7" fill="rgba(184,146,58,0.08)" stroke="#c4b08a" stroke-width="1.2"/>
+
+                <!-- JSON file icon bottom-right -->
+                <rect x="212" y="122" width="42" height="52" rx="5" fill="rgba(184,146,58,0.08)" stroke="#c4b08a" stroke-width="1.2"/>
+                <path d="M233 122 L254 122 L254 133 L233 133Z" fill="none"/>
+                <path d="M241 122 L254 134" stroke="#c4b08a" stroke-width="1" fill="none"/>
+                <rect x="241" y="122" width="13" height="12" rx="0" fill="rgba(184,146,58,0.06)" stroke="#c4b08a" stroke-width="0.8"/>
+                <text x="233" y="149" font-size="7" fill="#9a7a2e" font-family="Inter,sans-serif" font-weight="700" text-anchor="middle">.json</text>
+                <line x1="218" y1="153" x2="248" y2="153" stroke="#c4b08a" stroke-width="0.8" opacity="0.5"/>
+                <line x1="218" y1="158" x2="244" y2="158" stroke="#c4b08a" stroke-width="0.8" opacity="0.5"/>
+                <line x1="218" y1="163" x2="246" y2="163" stroke="#c4b08a" stroke-width="0.8" opacity="0.5"/>
+              </svg>
+            </div>
+
+            <!-- Features -->
+            <ul class="ver-features">
+              <li><span class="feat-icon">🔒</span><span data-i18n="offline_f1">資料主要保留在你的電腦，不經平台集中儲存</span></li>
+              <li><span class="feat-icon">💾</span><span data-i18n="offline_f2">可另存為 JSON 檔案，自行選擇電腦上的保存位置</span></li>
+              <li><span class="feat-icon">📵</span><span data-i18n="offline_f3">無需 Google 帳號，亦不依賴網絡連線</span></li>
+              <li><span class="feat-icon">🖥️</span><span data-i18n="offline_f4">以單機使用為主，不支援自動多裝置同步</span></li>
+              <li><span class="feat-icon">🖨️</span><span data-i18n="offline_f5">同樣支援匯出為圖片或 PDF</span></li>
+            </ul>
+
+            <div class="ver-cta">
+              <a href="app_offline.html" download="FamilyTree_Offline.html" class="btn btn-gold" data-i18n="dl_btn">⬇ 下載離線版 (.html)</a>
+              <p class="dl-note" data-i18n="dl_note">下載後，請以 Chrome / Edge 開啟此 HTML 檔案使用；資料可另外儲存為 JSON 檔案。</p>
+            </div>
+          </div>
+
+        </div><!-- /.cmp-grid -->
+
+      </div><!-- /.container -->
+    </section>
+
+    <!-- ── Feature table ── -->
+    <section class="cmp-table-section">
+      <div class="container">
+        <h2 class="section-title" data-i18n="table_title">功能對比一覽</h2>
+        <p class="section-subtitle" data-i18n="table_sub">兩個版本的家族樹核心功能相同，主要差別在儲存方式與共享能力。</p>
+
+        <div class="cmp-table-wrap">
+          <table class="cmp-table">
+            <thead>
+              <tr>
+                <th data-i18n="th_feature">功能</th>
+                <th data-i18n="th_online">🌐 在線版</th>
+                <th data-i18n="th_offline">🔒 離線版</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td data-i18n="row_tree">視覺化家族樹</td>
+                <td class="yes" data-i18n="yes">✓ 支援</td>
+                <td class="yes" data-i18n="yes">✓ 支援</td>
+              </tr>
+              <tr>
+                <td data-i18n="row_member">成員資料管理</td>
+                <td class="yes" data-i18n="yes">✓ 支援</td>
+                <td class="yes" data-i18n="yes">✓ 支援</td>
+              </tr>
+              <tr>
+                <td data-i18n="row_export">匯出圖片 / PDF</td>
+                <td class="yes" data-i18n="yes">✓ 支援</td>
+                <td class="yes" data-i18n="yes">✓ 支援</td>
+              </tr>
+              <tr>
+                <td data-i18n="row_save">儲存方式</td>
+                <td class="note" data-i18n="save_online">Google Drive（你自己的雲端）</td>
+                <td class="note" data-i18n="save_offline">本地 JSON 檔案</td>
+              </tr>
+              <tr>
+                <td data-i18n="row_login">需要帳號登入</td>
+                <td class="note" data-i18n="login_online">需要 Google 帳號</td>
+                <td class="yes" data-i18n="login_offline">✓ 無需帳號</td>
+              </tr>
+              <tr>
+                <td data-i18n="row_internet">需要網絡</td>
+                <td class="note" data-i18n="internet_online">儲存時需要</td>
+                <td class="yes" data-i18n="internet_offline">✓ 完全離線</td>
+              </tr>
+              <tr>
+                <td data-i18n="row_share">與家人共享</td>
+                <td class="yes" data-i18n="share_online">✓ 支援 Editor / Viewer</td>
+                <td class="no" data-i18n="share_offline">— 不支援</td>
+              </tr>
+              <tr>
+                <td data-i18n="row_multi">多裝置同步</td>
+                <td class="yes" data-i18n="multi_online">✓ 任何裝置</td>
+                <td class="no" data-i18n="multi_offline">— 不支援自動同步</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <span class="logo" data-i18n="footer_brand">家族樹</span>
+          <p class="footer-desc" data-i18n="footer_desc">致力於用現代技術保存傳統親情與家族歷史。</p>
+        </div>
+        <div class="footer-col">
+          <h4 data-i18n="footer_links_h">連結</h4>
+          <ul class="footer-links">
+            <li><a href="index.html" data-i18n="footer_home">首頁</a></li>
+            <li><a href="guide.html" data-i18n="nav_guide">使用教學</a></li>
+            <li><a href="app.html"   data-i18n="footer_app">開啟應用</a></li>
+            <li><a href="trust.html#about" data-i18n="footer_about">關於我們</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4 data-i18n="footer_legal_h">法務與政策</h4>
+          <ul class="footer-links">
+            <li><a href="trust.html#terms"      data-i18n="footer_terms">使用條款</a></li>
+            <li><a href="trust.html#privacy"    data-i18n="footer_privacy">私隱政策</a></li>
+            <li><a href="trust.html#disclaimer" data-i18n="footer_disclaimer">免責聲明</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4 data-i18n="footer_contact_h">聯絡</h4>
+          <ul class="footer-links">
+            <li><a href="trust.html#contact" data-i18n="footer_support">聯絡我們</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p data-i18n="footer_copy">© 2026 Family Tree Project · P. All rights reserved.</p>
+        <div style="display:flex;gap:20px;">
+          <span data-i18n="footer_version">內容與功能持續更新</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const LANG_KEY = 'family-heritage-lang';
+
+    const I18N = {
+      zh: {
+        nav_brand: '家族樹', nav_home: '首頁', nav_guide: '使用教學', nav_app: '開啟應用',
+        hero_title: '在線版 還是 離線版？',
+        hero_sub:   '兩個版本共用相同的家族樹功能。差別在於你如何儲存資料，以及是否與家人共享。',
+        badge_online:  '🌐 在線版',
+        badge_offline: '🔒 離線版',
+        online_title:   '與家人一起保存記憶',
+        online_tagline: '透過 Google Drive 雲端儲存，讓家人可以隨時在任何裝置上查看或協作。',
+        online_f1: '儲存至自己的 Google Drive，任何裝置皆可開啟',
+        online_f2: '邀請家人成為協作編輯者（Editor）或只讀查看者（Viewer）',
+        online_f3: '在手機、平板、電腦之間同步共享同一棵家族樹',
+        online_f4: '需要 Google 帳號登入，資料存放於你自己的 Drive',
+        online_f5: '匯出為圖片或 PDF',
+        online_cta: '開啟在線版',
+        offline_title:   '更私密，存於你的電腦',
+        offline_tagline: '無需帳號，無需網絡。資料可由你自行另存為 JSON 檔案，保存到你選擇的電腦位置。',
+        offline_f1: '資料主要保留在你的電腦，不經平台集中儲存',
+        offline_f2: '可另存為 JSON 檔案，自行選擇電腦上的保存位置',
+        offline_f3: '無需 Google 帳號，亦不依賴網絡連線',
+        offline_f4: '以單機使用為主，不支援自動多裝置同步',
+        offline_f5: '同樣支援匯出為圖片或 PDF',
+        dl_btn:   '⬇ 下載離線版 (.html)',
+        dl_note:  '下載後，請以 Chrome / Edge 開啟此 HTML 檔案使用；資料可另外儲存為 JSON 檔案。',
+        table_title: '功能對比一覽',
+        table_sub:   '兩個版本的家族樹核心功能相同，主要差別在儲存方式與共享能力。',
+        th_feature: '功能', th_online: '🌐 在線版', th_offline: '🔒 離線版',
+        row_tree:    '視覺化家族樹',    yes:              '✓ 支援',
+        row_member:  '成員資料管理',
+        row_export:  '匯出圖片 / PDF',
+        row_save:    '儲存方式',         save_online:      'Google Drive（你自己的雲端）', save_offline: '本地 JSON 檔案',
+        row_login:   '需要帳號登入',     login_online:     '需要 Google 帳號',              login_offline: '✓ 無需帳號',
+        row_internet:'需要網絡',          internet_online:  '儲存時需要',                    internet_offline: '✓ 完全離線',
+        row_share:   '與家人共享',        share_online:     '✓ 支援 Editor / Viewer',        share_offline: '— 不支援',
+        row_multi:   '多裝置同步',        multi_online:     '✓ 任何裝置',                    multi_offline: '— 不支援自動同步',
+        no: '— 不支援',
+        footer_brand: '家族樹', footer_desc: '致力於用現代技術保存傳統親情與家族歷史。',
+        footer_links_h: '連結', footer_legal_h: '法務與政策', footer_contact_h: '聯絡',
+        footer_home: '首頁', footer_app: '開啟應用', footer_about: '關於我們',
+        footer_privacy: '私隱政策', footer_terms: '使用條款', footer_disclaimer: '免責聲明',
+        footer_support: '聯絡我們',
+        footer_copy: '© 2026 Family Tree Project · P. All rights reserved.',
+        footer_version: '內容與功能持續更新'
+      },
+      en: {
+        nav_brand: 'Family Tree', nav_home: 'Home', nav_guide: 'User Guide', nav_app: 'Open App',
+        hero_title: 'Online or Offline?',
+        hero_sub:   'Both versions share the same core family tree features. The difference is how you save your data — and whether you share it with relatives.',
+        badge_online:  '🌐 Online',
+        badge_offline: '🔒 Offline',
+        online_title:   'Preserve Memories Together',
+        online_tagline: 'Cloud storage via Google Drive lets your family view or co-edit the tree from any device at any time.',
+        online_f1: 'Saved to your own Google Drive — open from any device',
+        online_f2: 'Invite relatives as Editors (can edit) or Viewers (read-only)',
+        online_f3: 'Sync the same tree across phone, tablet, and computer',
+        online_f4: 'Requires a Google account; your data stays in your own Drive',
+        online_f5: 'Export as image or PDF',
+        online_cta: 'Open Online Version',
+        offline_title:   'More Private, Saved on Your Computer',
+        offline_tagline: 'No account, no internet. Your data can be saved as a local JSON file in a location you choose on your computer.',
+        offline_f1: 'Data stays on your computer — not stored or processed through any platform',
+        offline_f2: 'Save as a JSON file; choose where to keep it on your computer',
+        offline_f3: 'No Google account needed, and no internet connection required',
+        offline_f4: 'Designed mainly for single-device use — no automatic multi-device sync',
+        offline_f5: 'Also supports export as image or PDF',
+        dl_btn:   '⬇ Download Offline Version (.html)',
+        dl_note:  'After downloading, open the HTML file in Chrome or Edge; data can be saved separately as a JSON file.',
+        table_title: 'Feature Comparison',
+        table_sub:   'Both versions share the same core features. The key difference is how data is saved and whether sharing is possible.',
+        th_feature: 'Feature', th_online: '🌐 Online', th_offline: '🔒 Offline',
+        row_tree:    'Visual Family Tree',   yes:             '✓ Supported',
+        row_member:  'Member Record Management',
+        row_export:  'Export Image / PDF',
+        row_save:    'How Data Is Saved',    save_online:     'Google Drive (your own cloud)',  save_offline: 'Local JSON file',
+        row_login:   'Account Required',     login_online:    'Google account required',         login_offline: '✓ No account needed',
+        row_internet:'Internet Required',    internet_online: 'Required to save',                internet_offline: '✓ Fully offline',
+        row_share:   'Share with Family',    share_online:    '✓ Editor / Viewer roles',         share_offline: '— Not supported',
+        row_multi:   'Multi-device Sync',    multi_online:    '✓ Any device',                    multi_offline: '— No automatic sync',
+        no: '— Not supported',
+        footer_brand: 'Family Tree', footer_desc: 'Dedicated to preserving traditional family bonds and history through modern technology.',
+        footer_links_h: 'Links', footer_legal_h: 'Legal and Policy', footer_contact_h: 'Contact',
+        footer_home: 'Home', footer_app: 'Open App', footer_about: 'About Us',
+        footer_privacy: 'Privacy Policy', footer_terms: 'Terms of Use', footer_disclaimer: 'Disclaimer',
+        footer_support: 'Support and Contact',
+        footer_copy: '© 2026 Family Tree Project · P. All rights reserved.',
+        footer_version: 'Content and features continue to evolve'
+      }
+    };
+
+    function setLang(lang) {
+      localStorage.setItem(LANG_KEY, lang);
+      applyLang(lang);
+    }
+
+    function applyLang(lang) {
+      document.documentElement.lang = lang;
+      document.getElementById('lang-zh-btn').classList.toggle('active', lang === 'zh');
+      document.getElementById('lang-en-btn').classList.toggle('active', lang === 'en');
+      const s = I18N[lang];
+      document.title = (lang === 'zh' ? '在線版 vs 離線版 — 家族樹' : 'Online vs Offline — Family Tree');
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const k = el.getAttribute('data-i18n');
+        if (s[k] !== undefined) el.innerHTML = s[k];
+      });
+    }
+
+    const savedLang = localStorage.getItem(LANG_KEY) || 'zh';
+    applyLang(savedLang);
+  </script>
+<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "02b8e565dab84ae79afc7171ee6848d0"}'></script><!-- End Cloudflare Web Analytics -->
+</body>
+</html>
